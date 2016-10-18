@@ -52,25 +52,24 @@ $$
 f_B\left(x_1,...,x_d\right)\propto \exp \left[ -x_1^2/200 - \frac{1}{2} \left(x_2 + Bx_1^2-100B\right)^2 - \frac{1}{2} \left(x_3^2 + x_4^2 + ... + x_d^2\right) \right]
 $$
 
-$B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension.
+$B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension. We have chosen the correlated Guassian distribution as targetting this demonstrates how the use of empirical covariance improves convergence - we learn the target's covariance as we move through steps of the MCMC. The banana-shaped distribution is an additional example with an irregular shape. We use this to test the ability of the markov chain to fully explore the state space with and without adaption. We first run our implementation of the AM algorithm targetting $N(0,\Sigma)$ with %todo what is the correlation structure used?
 
 
 <<am_on_correlated_guassian>>=
-library(adaptiveMH)
 
 n_iter = 1000  #  Total number of iterations
 t_adapt = 200  #  Time step at which adaptation begins
 x_1 = rep(-10,2) #  Vector of inital values
 adapt = "AM"  #  Choose the type of adaptation.
 
-X = mcmc(target = pi_norm_corr, 
-	 n_iter = n_iter, 
-	 x_1 = x_1, 
-	 adapt=adapt, 
+X = mcmc(target = pi_norm,
+	 n_iter = n_iter,
+	 x_1 = x_1,
+	 adapt=adapt,
 	 t_adapt = t_adapt
 	)
-plot(X[,1], 
-     xlab="Iteration index", 
+plot(X[,1],
+     xlab="Iteration index",
      ylab="First coordinate of the AM Markov chain"
     )
 
