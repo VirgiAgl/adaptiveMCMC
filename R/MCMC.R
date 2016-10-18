@@ -95,11 +95,11 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
     }
 
     if (adapt=="AM2"){
-      if (i <= 2*d) {
+      if (i <= t_adapt) {
         Y = q_norm(mu=X[i-1,], sigma=sigma) #proposal distribution sampled at the current point
       }
 
-      if (i == 2*d+1) {
+      if (i == t_adapt+1) {
         if (cov_estimator=="Sample covariance"){
           X_until_now = X[1:(i-1),] #the rows of X that we have filled so far
           sigma = s_d*cov(X_until_now)
@@ -124,7 +124,7 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
         }
       }
 
-      if (i > 2*d+1) {
+      if (i > t_adapt+1) {
         if (cov_estimator=="Sample covariance") {
         sigma = ((i-2)/(i-1))*sigma + (s_d/(i-1))*(((i-1)*mean_X[i-2,]%*%t(mean_X[i-2,]))-(i*mean_X[i-1,]%*%t(mean_X[i-1,]))+mean_X[i-1,]%*%t(mean_X[i-1,]))
         sigma = nearPD(sigma)$mat
@@ -213,8 +213,7 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
 
     X_until_now = X[1:i,]
     expected_values[i,] = apply(X_until_now,2,mean)
-
-  }  #  End of loop
+    }  #  End of loop
 
   alpha_values<-acceptances/seq(1,length(acceptances),by=1)
 
@@ -240,10 +239,9 @@ pi_banana3 = function(x, B=0.03) {
   exp(-(x[1]^2)/200 - (1/2)*(x[2]+B*x[1]^2-100*B)^2-(1/2)*(x[3]^2))
 }
 
-
 #d-dimensional banana
-pi_bananad = function(x, B=0.03) {
-  exp(-(x[1]^2)/200 - (1/2)*(x[2]+B*x[1]^2-100*B)^2-(1/2)*(sum(x[3:d]^2)))
+pi_banana8 = function(x, B=0.03) {
+  exp(-(x[1]^2)/200 - (1/2)*(x[2]+B*x[1]^2-100*B)^2-(1/2)*(sum(x[3:8]^2)))
 }
 
 
@@ -266,7 +264,7 @@ Posdef <- function (n, ev = runif(n, 0, 10)) {
   Z <- t(O) %*% diag(ev) %*% O
   return(Z)
 }
-sigmaPD <- Posdef(n=8)
+#sigmaPD <- Posdef(n=8)
 
 pi_norm_corr= function(x) {
   d=8
@@ -274,9 +272,6 @@ pi_norm_corr= function(x) {
 }
 
 
-#plot(pi_norm_corr(cbind(seq(-5,5,0.1),seq(-5,5,0.1))))
-#values<-rmvnorm(n = 500,mean=rep(0,2),sigma=matrix(c(1,0.8,0.8,1),2,2))
-#plot(values[,1], values[,2])
 
 ############################################################################
 # Some common proposal distributions to draw from
@@ -287,7 +282,6 @@ pi_norm_corr= function(x) {
 q_norm = function(mu, sigma) {
   mvrnorm(n = 1, mu = mu, Sigma = sigma)
 }
-
 
 
 ############################################################################
@@ -302,6 +296,76 @@ q_norm = function(mu, sigma) {
 #  }
 #  return(moving_alpha)
 #}
+
+
+
+############################################################################
+# Define functions to produce plots
+############################################################################
+
+plotTarget = function(target, d, num_values){
+  Z = matrix(cbind(rep(seq(from=(-10), to=10,length.out = 1000),d)), ncol=d)
+  functionValues = target(Z)
+  plot(seq(from=(-10), to=10,length.out = 1000),functionValues)
+}
+
+
+#plotTarget(pi_norm_corr, 8, 100)
+#plotTarget(pi_banana_matrix, 2, 100)
+
+
+plotIterations = function(X, n_iter, title){
+  plot = qplot(seq(from= 1, to=n_iter+1, by=1), X ,geom="point",
+            main="",
+            xlab="Iteration index", ylab=title, xlim=c(0,n_iter+1), alpha = I(1/1000), size=I(2.5)) +
+            theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
+            axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
+            axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
+            geom_point(size=2, shape=19, alpha=0.1)
+  return(plot)
+}
+
+
+plotComponents = function(X, Y , Xtitle, Ytitle){
+  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
+    theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
+          axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
+          axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
+          geom_point(size=2, shape=19, alpha=0.1)
+  return(plot)
+}
+
+plotComponents3D = function(X, Y , Xtitle, Ytitle){
+  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
+    theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
+          axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
+          axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
+    geom_point(size=2, shape=19, alpha=0.1)
+  return(plot)
+}
+
+plotACF = function(X, title){
+  plot = acf(X, main=title)
+}
+
+
+
+
+plot1=plotIterations(X$X[,1], 1000, title="Values of the first MC component")
+plot2=plotIterations(X$X[,2], 1000, title="Values of the second MC component")
+grid.arrange(plot1, plot2, ncol=2)
+
+plot3=plotComponents(X$X[,1], X$X[,2],  Xtitle = "First component of the MC", Ytitle = "Second component of the MC")
+plot3
+
+plot4=plotIterations(X$acceptance_rates, 5000, "Alpha")
+#plot4
+
+plot5=plotIterations(X$sample_mean[,1], 5000, "Sample expected values")
+#plot5
+
+plotACF(X$X[,2], "Autocorrelation function for the first MC component")
+
 
 
 ############################################################################
@@ -325,74 +389,10 @@ iterations<-c(seq(from= 1, to=n_iter+1, by=1))  #costruct the sequence of iterat
 #moving_accep=plot(moving_acceptance(n_moving, n_iter, X))
 #n_moving=10
 
-
-
-############################################################################
-# Define functions to produce plots
-############################################################################
-
-plotTarget = function(target, d, num_values){
-  Z = matrix(cbind(rep(seq(from=(-10), to=10,length.out = 1000),d)), ncol=d)
-  functionValues = target(Z)
-  plot(seq(from=(-10), to=10,length.out = 1000),functionValues)
-}
-
-
-plotTarget(pi_norm_corr, 8, 100)
-#plotTarget(pi_banana_matrix, 2, 100)
-
-
-plotIterations = function(X, n_iter, title){
-  plot = qplot(seq(from= 1, to=n_iter+1, by=1), X ,geom="point",
-            main="",
-            xlab="Iteration", ylab=title, xlim=c(0,n_iter+1), alpha = I(1/1000), size=I(2.5)) +
-            theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
-            axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
-            axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
-            geom_point(size=2, shape=19, alpha=0.1)
-  return(plot)
-}
-
-
-plotComponents = function(X, Y , Xtitle, Ytitle){
-  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
-    theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
-          axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
-          axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
-    geom_point(size=2, shape=19, alpha=0.1)
-  return(plot)
-}
-
-
-
-plotComponents = function(X, Y , Xtitle, Ytitle){
-  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
-    theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
-          axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
-          axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
-    geom_point(size=2, shape=19, alpha=0.1)
-  return(plot)
-}
-
-plotACF = function(X, title){
-  plot = acf(X, main=title)
-}
-
-
-
-
-#plot1=plotIterations(X$X[,1], 5000, title="Values of the first MC component")
-#plot2=plotIterations(X$X[,2], 5000, title="Values of the second MC component")
-#grid.arrange(plot1, plot2, ncol=2)
-
-#plot3=plotComponents(X$X[,1], X$X[,2],  Xtitle = "First components of the MC", Ytitle = "Second components of the MC")
-#plot3
-
-#plot4=plotIterations(X$acceptance_rates, 5000, "Alpha")
-#plot4
-
-#plot5=plotIterations(X$sample_mean[,1], 5000, "Sample expected values")
-#plot5
-
-#plotACF(X$X[,1], "Autocorrelation function for the first MC component")
-
+moving_alpha = rep(NA, n_iter/n_moving)
+#  moving_alpha[1]= X$acceptances[n_moving]/n_moving
+#  for (i in seq(2*n_moving, n_iter, by=n_moving)) {
+#    moving_alpha[i/n_moving]=(X$acceptances[i]-X$acceptances[i-n_moving])/n_moving
+#  }
+apply(X_chain[1:10],2,mean)
+apply(X_chain[2:11],2,mean)
