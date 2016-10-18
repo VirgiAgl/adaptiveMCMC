@@ -1,0 +1,11 @@
+Package: adaptiveMH
+Type: Package
+Title: Adaptive MCMC implementation
+Version: 0.1.0
+Author: Tamar Loach and Virginia Aglietti
+Maintainer: Who to complain to tamar.loach@spc.ox.ac.uk
+Description: This implements adaptive MCMC
+License: NA
+LazyData: TRUE
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
