@@ -4,20 +4,20 @@ library(mvtnorm)
 library(CVTuningCov)
 library(corpcor)
 library(PDSCE)
+library(ggplot2)
+library(gridExtra)
 
 
 ############################################################################
 # Still to implement
 # ------------------
-# Second algorithm for adaptation
 # Burn in
-# Normal MH acceptance probability
 # Do something with the optimal alpha
 # Suboptimality factor
 # Implement and test higher dimensional problem
 # Speed up code
-# Check updating acceptance forumla for AM3 and 4
 ############################################################################
+
 
 mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample covariance", t_adapt = Inf){
 
@@ -49,10 +49,10 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
   #####################################################################
   X = matrix(NA, n_iter+1, d)  #  Initialise matrix to store the markov chain
   X[1,] = x_1  #  Store the first step of the markov chain
-  acceptances = c(rep(NA,n_iter+1))  #  Initialise counter for accepted states
-  acceptances[1] = 0  #  Initialise counter for accepted states
-  expected_values = matrix(NA,n_iter+1,d)  #  Initialise counter for accepted states
-  expected_values[1,] = sapply(x_1,mean)  #  Initialise counter for accepted states
+  acceptances = c(rep(NA,n_iter+1))  #  Initialise vector to store the number of accepted states
+  acceptances[1] = 0  #  Store the first number of accepted states
+  expected_values = matrix(NA,n_iter+1,d)  #  Initialise matrix to store the expected valeus 
+  expected_values[1,] = sapply(x_1,mean)  #  Store the first step expected value
 
   #####################################################################
   # Some initialisation needed for AM adaptation
@@ -168,7 +168,7 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
     if (adapt=="AM") {
       mean_X[i,] = ((mean_X[i-1,] * (i-1)) + X[i,])/i
 
-      if (i == t_adapt) { #the first adaptation step
+      if (i == t_adapt) {  #the first adaptation step
          #the rows of X that we have filled so far
         X_until_now = X[1:i,]
         if (cov_estimator=="Sample covariance") {
@@ -187,8 +187,8 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
           sigma = nearPD(sigma)$mat
           }
       }
-      if (i > t_adapt) { #the later adaptation step
-        X_until_now = X[1:i,] #the rows of X that we have filled so far
+      if (i > t_adapt) {       #the later adaptation step
+        X_until_now = X[1:i,]  #the rows of X that we have filled so far
 
         if (cov_estimator=="Sample covariance") {
           #recursive sigma
@@ -210,15 +210,17 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
     if (adapt=="AM2") {
       mean_X[i,] = ((mean_X[i-1,] * (i-1)) + X[i,])/i
     }
+    
     X_until_now = X[1:i,]
     expected_values[i,] = apply(X_until_now,2,mean)
-    alpha_values<-acceptances/n_iter
 
   }  #  End of loop
-
+  
+  alpha_values<-acceptances/seq(1,length(acceptances),by=1)
+  
   cat("\nMCMC finished in", Sys.time() - start, "seconds.")
-  cat("\nThe acceptance rate was:", acceptances[n_iter]/n_iter)
-  results = list(X=X, acceptance_rate=alpha_values, sample_mean=expected_values)
+  cat("\nThe last acceptance rate was:", acceptances[n_iter]/n_iter)
+  results = list(X=X, acceptance_rates=alpha_values, sample_mean=expected_values, n_acceptances=acceptances)
   return(results)
 }
 
@@ -229,6 +231,9 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
 pi_banana = function(x, B=0.03) {
   exp(-x[1]^2/200 - 1/2*(x[2]+B*x[1]^2-100*B)^2)
 }
+pi_banana_matrix = function(x, B=0.03) {
+  exp(-x[,1]^2/200 - 1/2*(x[,2]+B*x[,1]^2-100*B)^2)
+}
 
 #3d banana
 pi_banana3 = function(x, B=0.03) {
@@ -236,11 +241,16 @@ pi_banana3 = function(x, B=0.03) {
 }
 
 
+pi_banana3 
+
+
+
 
 #d-dimensional banana
-pi_banana3 = function(x, B=0.03) {
-  exp(-(x[1]^2)/200 - (1/2)*(x[2]+B*x[1]^2-100*B)^2-(1/2)*(sum(x[3:20]^2)))
+pi_bananad = function(x, B=0.03) {
+  exp(-(x[1]^2)/200 - (1/2)*(x[2]+B*x[1]^2-100*B)^2-(1/2)*(sum(x[3:d]^2)))
 }
+
 
 # Uncorrelated Gaussian distribution  (d=2)
 pi_norm = function(x) {
@@ -270,7 +280,6 @@ pi_norm_corr= function(x) {
 
 
 #plot(pi_norm_corr(cbind(seq(-5,5,0.1),seq(-5,5,0.1))))
-
 #values<-rmvnorm(n = 500,mean=rep(0,2),sigma=matrix(c(1,0.8,0.8,1),2,2))
 #plot(values[,1], values[,2])
 
@@ -278,26 +287,113 @@ pi_norm_corr= function(x) {
 # Some common proposal distributions to draw from
 ############################################################################
 
-#define a multivariate normal proposal function
+#Multivariate Gaussian proposal distribution
 
 q_norm = function(mu, sigma) {
   mvrnorm(n = 1, mu = mu, Sigma = sigma)
 }
 
+
+
+############################################################################
+# Define a function to compute moving average acceptance rates
+############################################################################
+
+moving_acceptance = function(n_moving, n_iter,X){
+  moving_alpha = rep(NA, n_iter/n_moving)
+  moving_alpha[1]= X$acceptances[n_moving]/n_moving
+  for (i in seq(2*n_moving, n_iter, by=n_moving)) {
+    moving_alpha[i/n_moving]=(X$acceptances[i]-X$acceptances[i-n_moving])/n_moving
+  }
+  return(moving_alpha)
+}
+
+
 ############################################################################
 # Testing the MCMC function
 ############################################################################
-n_iter = 100000  #  Total number of iterations
-t_adapt = 1000  #  Time step at which adaptation begins
-x_1 = rep(5,8)   #  Vector of inital values
-adapt = "AM"   #  Choose the type of adaptation. "AM" or "None" currently.
-cov_estimator="Shrinkage"
+n_iter = 5000     #  Total number of iterations
+t_adapt = 1000    #  Time step at which adaptation begins
+x_1 = rep(5,8)    #  Vector of inital values
+adapt = "AM"      #  Choose the type of adaptation. "AM" or "None" currently.
+cov_estimator="Shrinkage"    #  Choose the type of covariance matrix estimator. "Sample covariance", "Shrinkage estimator" or "Thresholding estimator".
 
 X = mcmc(target = pi_norm_corr, n_iter = n_iter, x_1 = x_1, adapt=adapt, cov_estimator, t_adapt = t_adapt)
 
-#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM markov chain")
-#hist(X[,1], xlab="First coordinate of the AM markov chain", ylab="Frequency", breaks=50, main="")
-plot(X[,2],X[,1],col='gold')
+iterations<-c(seq(from= 1, to=n_iter+1, by=1))  #costruct the sequence of iteration steps
 
-plot(iterations,X$acceptance_rate)
-plot(iterations,X$sample_mean[,2])
+
+moving_accep=plot(moving_acceptance(n_moving, n_iter, X))
+n_moving=10
+
+
+
+############################################################################
+# Define functions to produce plots
+############################################################################
+
+plotTarget = function(target, d, num_values){
+  Z = matrix(cbind(rep(seq(from=(-10), to=10,length.out = 1000),d)), ncol=d)
+  functionValues = target(Z)
+  plot(seq(from=(-10), to=10,length.out = 1000),functionValues)
+}
+
+
+plotTarget(pi_norm_corr, 8, 100)
+#plotTarget(pi_banana_matrix, 2, 100)
+
+
+plotIterations = function(X, n_iter, title){
+  plot = qplot(seq(from= 1, to=n_iter+1, by=1), X ,geom="point", 
+            main="", 
+            xlab="Iteration", ylab=title, xlim=c(0,n_iter+1), alpha = I(1/1000), size=I(2.5)) +
+            theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'), 
+            axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"), 
+            axis.line = element_line(colour="black", size = 1, linetype = "solid"))+ 
+            geom_point(size=2, shape=19, alpha=0.1)
+  return(plot)
+}
+
+
+plotComponents = function(X, Y , Xtitle, Ytitle){
+  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
+    theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'), 
+          axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"), 
+          axis.line = element_line(colour="black", size = 1, linetype = "solid"))+ 
+    geom_point(size=2, shape=19, alpha=0.1)
+  return(plot)
+}
+
+
+
+plotComponents = function(X, Y , Xtitle, Ytitle){
+  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
+    theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'), 
+          axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"), 
+          axis.line = element_line(colour="black", size = 1, linetype = "solid"))+ 
+    geom_point(size=2, shape=19, alpha=0.1)
+  return(plot)
+}
+
+plotACF = function(X, title){
+  plot = acf(X, main=title)
+}
+
+
+
+
+plot1=plotIterations(X$X[,1], 5000, title="Values of the first MC component")
+plot2=plotIterations(X$X[,2], 5000, title="Values of the second MC component")
+grid.arrange(plot1, plot2, ncol=2)
+
+plot3=plotComponents(X$X[,1], X$X[,2],  Xtitle = "First components of the MC", Ytitle = "Second components of the MC")
+plot3
+
+plot4=plotIterations(X$acceptance_rates, 5000, "Alpha")
+plot4
+
+plot5=plotIterations(X$sample_mean[,1], 5000, "Sample expected values")
+plot5
+
+plotACF(X$X[,1], "Autocorrelation function for the first MC component")
+
