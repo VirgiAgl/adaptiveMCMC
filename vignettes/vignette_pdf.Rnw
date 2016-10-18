@@ -48,19 +48,19 @@ Because of the instability of the covariance matrix, to implement the adaptivity
 
 We now numerically test the AM algorithm. We have used two different target distributions: a correlated Gaussian distribution $N(0,\Sigma)$ and a "banana"-shaped distribution (\citep{roberts2009}) given by:
 
+$$
+f_b\left(x_1,...,x_d\right)\propto \exp \left[ -x_1^2/200 - \frac{1}{2} (x_2 + Bx_1^2-100B\right^2 - \frac{1}{2} \leftx_3^2 + x_4^2 + ... + x_d^2\right) \right]
+$$
 
-
-
-The starting values were sampled close to the peak-values of the target densities. We show here the algorithm targeting a bivariate Gaussian distribution in $10,000$ iterations - we start updating the covariance matrix after 1000 non-adaptive steps.
-
+$B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension.
 
 % below is a code chunk. You don't have to give it a name, but if you do
 % it MUST be unique.
 <<chunkname>>=
 library(adaptiveMH)
 
-n_iter = 10000  #  Total number of iterations
-t_adapt = 2000  #  Time step at which adaptation begins
+n_iter = 100  #  Total number of iterations
+t_adapt = 50  #  Time step at which adaptation begins
 x_1 = rep(-10,2) #  Vector of inital values
 adapt = "AM"  #  Choose the type of adaptation. "AM" or "None" currently.
 
