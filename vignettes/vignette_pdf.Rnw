@@ -1,0 +1,171 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[round]{natbib}
+
+% The line below tells R to use knitr on this.
+%\VignetteEngine{knitr::knitr}
+
+\title{OxWaSP Module 1: Adaptive MCMC}
+\author{Virginia Aglietti \and Tamar Loach}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction to Adaptive MCMC - the AM algorithm}
+
+MCMC algorithms allow sampling from complicated, high-dimensional distributions. Choice of the proposal distribution (from which samples are taken in an attempt to approximate sampling from the target distribution $\pi$) determines the ability of the algorithm to explore the parameter space fully and hence draw a good sample. Adaptive MCMC algorithms tackle this challenge by using samples already generated to learn about the target distribution; they push this knowledge back to the choice of proposal distribution iteratively.
+
+This project explores adaptive MCMC algorithms existing in the literature that use covariance estimators to improve convergence to a target distribution supported on a subset of $\mathbb{R}^d$. In this schema we learn about the target distribution $\pi$ through estimation of its correlation structure from the MCMC samples. We use this correlation structure to improve our estimate of the target.
+
+We first implement an adaptive MCMC algorithm AM \citep{haario2001} which is a modification of the random walk Metropolis-Hastings algorithm. In AM the proposal distribution is updated at time $t$ to be a normal distribution centered on the current point $X_{t-1}$ with covariance $C_t(X_0, ..., X_{t-1})$ that depends on the the whole history of the chain. The use of historic states means the resulting chain is non-markovian, and reversibility conditions are not satisfied. Haario et al show that, with a small update to the usual Metropolis-Hastings acceptance probability, the right ergodic properties and correct simulation of the target distribution none the less remain. The probability with which to accept candidate points in the chain becomes:
+
+$$
+\alpha(X_{t-1},Y) = \text{min}\left( 1,\frac{\pi(Y)}{\pi(X_{t-1})}\right)
+$$
+
+With $C_t$ given by:
+
+$$
+C_t = s_d \text{cov}(X_0, ..., X_{t-1}) + s_d\epsilon I_d
+$$
+
+Here $\text{cov}()$ is the usual empirical covariance matrix, and the parameter $s_d = \frac{2.4^2}{d}$ \citep{gelman1996}. $\epsilon$ is chosen to be very small compared to the subset of $\mathbb{R}^d$ upon which the target function is supported. The AM algorithm is computationally feasible %Tamar What is the computional compplexity?
+due to recursive updating of the covariance matrix on acquisition of each new sample through the relation:
+
+$$
+C_{t+1} = \frac{t-1}{t} C_t + \frac{s_d}{t}(t \bar{X}_{t-1}\bar{X}^T_{t-1} - (t+1)\bar{X}_t \bar{X}^T_t + X_tX_t^T + \epsilon I_d)
+$$
+ with the mean calculated recursively by:
+$$
+\bar{X}_{t+1} = \frac{t \bar{X}_{t}  + X_{t+1}}{t+1}
+$$
+
+Because of the instability of the covariance matrix, to implement the adaptivity we first run the algorithm with no change to the covariance of the proposal distribution. The adaptation starts at a user defined point in time, and until this time the covariance of the proposal is chosen to represent our best knowledge of the target distribution.
+
+\section{An example - testing the AM algorithm}
+
+%Tamar you have reached here
+
+We have numerically tested the AM algorithm for various dimensions of the parameter space and for different iteration numbers. We have used two different target distributions: an uncorrelated Gaussian distribution and a "banana"-shaped distribution. The two distributions are bounded from above and have bounded  support. This ensures the validity of the ergodicity property for the simulated process. The starting values were sampled close to the peak-values of the target densities. We show here the algorithm targeting a bivariate Gaussian distribution in $10,000$ iterations - we start updating the covariance matrix after 1000 non-adaptive steps.
+
+
+% below is a code chunk. You don't have to give it a name, but if you do
+% it MUST be unique.
+<<chunkname>>=
+library(adaptiveMH)
+
+n_iter = 10000  #  Total number of iterations
+t_adapt = 2000  #  Time step at which adaptation begins
+x_1 = rep(-10,2) #  Vector of inital values
+adapt = "AM"  #  Choose the type of adaptation. "AM" or "None" currently.
+
+X = mcmc(target = pi_norm, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)
+plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")
+hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")
+
+library(ggplot2)
+
+iterations<-c(seq(from= 1, to=n_iter+1, by=1))
+
+plot<-qplot(iterations, X[,2],geom="point", main="Adaptive MCMC for multidimensional correlated Gaussian distribution", xlab="Iteration", ylab="", xlim=c(0,10000), alpha = I(1/50), size=I(2.5)) +  theme(axis.title.x = element_text(size = 15), title = element_text(colour='black'), axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"), axis.line = element_line(colour="black", size = 1, linetype = "solid"))+ theme( axis.line = element_line(colour = "darkblue", size = 1, linetype = "solid"))
+plot
+
+
+@
+In order to test the increased performance of the AM algorithm, we have compared it with the classical Metropolis-Hastings algorithm. We found the AM algorithm to be faster and to perform better in terms of acceptance rate.  Again for $10,000$ iterations of the MCMC and for a dimension $d=2$, but this time with no adaptation:
+
+<<chunkname2>>=
+adapt = "None"  #  Choose the type of adaptation. "AM" or "None" currently.
+
+X = mcmc(target = pi_norm, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)
+
+plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")
+hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")
+
+@
+
+\section{A Bit About knitr}
+
+Whilst this demonstrates that the algorithms both approximately sample from the correct target distribution, there is no improvement in acceptance rate due to the adaptation steps. We require a less regular shaped target distribution to test whether adaptation improves our acceptance rate towards the optimal 0.234. For this we follow Haario et al in using a banana-shaped distribution. The following results show a significantly lower acceptance rate for the adaptive version of the algorithm.
+
+The AM algorithm with banana target:
+
+<<chunk3>>=
+adapt = "AM"  #  Choose the type of adaptation. "AM" or "None" currently.
+
+X = mcmc(target = pi_banana, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)
+
+#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")
+#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")
+plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM Markov chain")
+
+@
+
+The MH algorithm with banana target:
+
+<<chunk4>>=
+adapt = "None"  #  Choose the type of adaptation. "AM" or "None" currently.
+
+X = mcmc(target = pi_banana, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)
+
+#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")
+#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")
+plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM markov chain")
+
+@
+
+We can see that the acceptance probability is closer to the optimal 0.234 with adaptation according to Haario et al.
+
+We now implement an adaptation scheme that uses stochastic stabilisation rather than numerical. This algorithm (AM2), from Roberts and Rosenthal (2009), differs from AM by using a mixture of Gaussians as the proposal distribution. In proportion $\beta$ a normal uncorrelated distribution is used, and this is mixed with a correlated normal distribution.
+
+$$
+Q_n(x,.) = (1-\beta) N(x,s_d \Sigma_n) + \beta (N(x,(0.1^2)I_d/d)
+$$
+
+The results for our implementation of AM2 are as follows. We have used a higher dimensional normal distribution for the proposal $20$ and the banana target $3$. Notice that the point at which we start adapting is determined by $d$, the dimension of the target distribution. The algorithm performs well when this $d$ is high; we believe this is due to the point at which the adaptation starts. We have thus approximated a 3-dimensional banana with a 20-dimensional normal gaussian distribution. This forces the adaptation to start later. We would like to further investigate this effect, and explore various dimensional spaces.
+
+
+<<>>=
+n_iter = 1000 #  Total number of iterations
+x_1 = rep(1,20) #  Vector of inital values
+adapt = "AM2"  #  Choose the type of adaptation. "AM" or "None" currently.
+
+X = mcmc(target = pi_banana3, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)
+
+#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")
+#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")
+plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM Markov chain")
+library(scatterplot3d)
+scatterplot3d(x=X[,2],y=X[,3],z=X[,1], xlab="Second coordinate of the AM2 Markov chain", ylab="Third coordinate of the AM2 Markov chain", zlab="First coordinate of the AM2 Markov chain", color="gold")
+@
+
+\section{Less naive covariance estimation}
+
+Naive empirical covariance estimators are unstable for high-dimensional problems with little data; the literature .
+
+
+Following these two adaptive MH implementations, we are now looking to use something that is less naive than the vanilla estimator for the covariance matrix. In particular we have began testing the shrinkage and thresholding estimators as modifications to AM2. We will now test whether these estimators translate into better convergence by looking at their trajectories. We then plan to include burn in, and compare all algorithms in terms of the suboptimality factor following Roberts and Rosenthal (2009).
+
+\section{\LaTeX}
+
+\LaTeX itself is complicated if you've never used it before, but I'm sure you'll
+pick it up quickly: there are a lot of guides on the web.  I recommend using the
+\texttt{align} environment (in the \texttt{amsmath} package) for displayed equations:
+\begin{align*}
+% lose the *'s if you want equation numbers
+f(x) &= x^3 - x - 1\\
+g(y) &= y^4 + 2y
+\end{align*}
+
+You can cite in two ways using the \texttt{natbib} package:
+\citep{haario2001}
+and
+\citet{haario2001}.
+
+% now generate the bibliography from file adaptiveMCMC.bib
+\bibliographystyle{plainnat}
+\bibliography{adaptiveMCMC}
+
+\end{document}
