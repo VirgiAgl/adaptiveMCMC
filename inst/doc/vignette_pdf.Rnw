@@ -54,16 +54,17 @@ $$
 
 $B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension.
 
-
-<<am_on_correlated_guassian>>=
+% below is a code chunk. You don't have to give it a name, but if you do
+% it MUST be unique.
+<<chunkname>>=
 library(adaptiveMH)
 
-n_iter = 1000  #  Total number of iterations
-t_adapt = 200  #  Time step at which adaptation begins
+n_iter = 100  #  Total number of iterations
+t_adapt = 50  #  Time step at which adaptation begins
 x_1 = rep(-10,2) #  Vector of inital values
 adapt = "AM"  #  Choose the type of adaptation.
 
-X = mcmc(target = pi_norm_corr, 
+X = mcmc(target = pi_norm, 
 	 n_iter = n_iter, 
 	 x_1 = x_1, 
 	 adapt=adapt, 
@@ -73,6 +74,38 @@ plot(X[,1],
      xlab="Iteration index", 
      ylab="First coordinate of the AM Markov chain"
     )
+
+hist(X[,1], 
+     xlab="First coordinate of the AM Markov chain", 
+     ylab="Frequency", 
+     breaks=50, 
+     main=""
+    )
+
+library(ggplot2)
+
+iterations<-c(seq(from= 1, to=n_iter+1, by=1))
+
+plot<-qplot(iterations, 
+	   X[,2],
+	   geom="point", 
+	   main="Adaptive MCMC for multidimensional correlated Gaussian distribution", 
+	   xlab="Iteration", 
+	   ylab="", 
+ 	   xlim=c(0,10000), 
+	   alpha = I(1/50),
+	   size=I(2.5)) +  theme(axis.title.x = element_text(size = 15), 
+	   title = element_text(colour='black'), 
+	   axis.text.x=element_text(colour="black"),
+ 	   axis.text.y=element_text(colour="black"), 
+	   axis.line = element_line(colour="black", 
+	   			    size = 1, 
+				    linetype = "solid"
+				   )
+				)+ 
+				theme(axis.line = element_line(colour = "darkblue", size = 1, linetype = "solid"))
+plot
+
 
 @
 In order to test the increased performance of the AM algorithm, we have compared it with the classical Metropolis-Hastings algorithm. We found the AM algorithm to be faster and to perform better in terms of acceptance rate.  Again for $10,000$ iterations of the MCMC and for a dimension $d=2$, but this time with no adaptation:
