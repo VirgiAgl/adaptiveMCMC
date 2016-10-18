@@ -4,7 +4,7 @@ library(mvtnorm)
 library(CVTuningCov)
 library(corpcor)
 library(PDSCE)
-library(ggplot2)
+
 
 ############################################################################
 # Still to implement
