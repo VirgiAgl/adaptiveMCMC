@@ -235,8 +235,6 @@ pi_banana3 = function(x, B=0.03) {
   exp(-(x[1]^2)/200 - (1/2)*(x[2]+B*x[1]^2-100*B)^2-(1/2)*(x[3]^2))
 }
 
-
-
 #d-dimensional banana
 pi_banana3 = function(x, B=0.03) {
   exp(-(x[1]^2)/200 - (1/2)*(x[2]+B*x[1]^2-100*B)^2-(1/2)*(sum(x[3:20]^2)))
