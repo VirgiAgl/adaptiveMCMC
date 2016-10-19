@@ -145,6 +145,7 @@ plot10
 
 @
 
+AM is able to explore the state space, adapt properly and settle down to rapid mixing. We see an improved acceptance rate.
 
 <<mh_am_banana>>=
 
@@ -183,9 +184,21 @@ grid.arrange(plot11, plot12, ncol=2)
 
 @
 
+We now explore a slight modification to the adaptation scheme AM2\citep{roberts2009}, that uses stochastic stabilisation rather than the numerical stabilisation of AM. Roberts and Rosenthal use a mixture of Gaussians as the proposal distribution: with proportion $\beta$ a normal uncorrelated distribution is mixed with a correlated normal distribution.
+
+$$
+Q_n(x,\cdot) = (1-\beta) N(x,s_d \Sigma_n) + \beta (N(x,(0.1^2)I_d/d)
+$$
+
+TODO Discuss the problems with starting dimension here.
+
+%The results for our implementation of AM2 are as follows.
+
+%We have used a higher dimensional normal distributionfor the proposal $20$ and the banana target $3$. Notice that the point at which we start adapting is determined by $d$, the dimension of the target distribution. The algorithm performs well when this $d$ is high; we believe this is due to the point at which the adaptation starts. We have thus approximated a 3-dimensional banana with a 20-dimensional normal gaussian distribution. This forces the adaptation to start later. We would like to further investigate this effect, and explore various dimensional spaces.
 
 
-<<am1_am2_banana, fig.width=5 >>=
+
+<<am1_am2_banana, fig.width=5, fig.cap="The first component of the 8-dimensional banana shaped distribution targetted using AM (left) and AM2 (right).">>=
 
 x_1 = rep(5,8)      #  Vector of inital values
 target = pi_banana8
@@ -212,6 +225,7 @@ plot14=plotIterations(
 grid.arrange(plot13, plot14, ncol=2)
 
 @
+
 
 
 
@@ -371,7 +385,6 @@ ggplot(df1,aes(x,y))+geom_line(aes(color="First line"))+
 
 @
 
-In order to test the increased performance of the AM algorithm, we have compared it with the classical Metropolis-Hastings algorithm. We found the AM algorithm to be faster and to perform better in terms of acceptance rate.  Again for $10,000$ iterations of the MCMC and for a dimension $d=2$, but this time with no adaptation:
 
 
 \section{A Bit About knitr}
@@ -384,13 +397,6 @@ The MH algorithm with banana target:
 
 We can see that the acceptance probability is closer to the optimal 0.234 with adaptation according to Haario et al.
 
-We now implement an adaptation scheme that uses stochastic stabilisation rather than numerical. This algorithm (AM2), from Roberts and Rosenthal (2009), differs from AM by using a mixture of Gaussians as the proposal distribution. In proportion $\beta$ a normal uncorrelated distribution is used, and this is mixed with a correlated normal distribution.
-
-$$
-Q_n(x,.) = (1-\beta) N(x,s_d \Sigma_n) + \beta (N(x,(0.1^2)I_d/d)
-$$
-
-The results for our implementation of AM2 are as follows. We have used a higher dimensional normal distribution for the proposal $20$ and the banana target $3$. Notice that the point at which we start adapting is determined by $d$, the dimension of the target distribution. The algorithm performs well when this $d$ is high; we believe this is due to the point at which the adaptation starts. We have thus approximated a 3-dimensional banana with a 20-dimensional normal gaussian distribution. This forces the adaptation to start later. We would like to further investigate this effect, and explore various dimensional spaces.
 
 
 \section{Less naive covariance estimation}

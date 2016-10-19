@@ -120,7 +120,7 @@ grid.arrange(plot11, plot12, ncol=2)
 
 
 
-## ----am1_am2_banana, fig.width=5-----------------------------------------
+## ----am1_am2_banana, fig.width=5, fig.cap="The first component of the 8-dimensional banana shaped distribution targetted using AM (left) and AM2 (right)."----
 
 x_1 = rep(5,8)      #  Vector of inital values
 target = pi_banana8
