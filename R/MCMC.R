@@ -18,7 +18,7 @@ library(gridExtra)
 ############################################################################
 
 
-mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample covariance", t_adapt = Inf){
+mcmc = function(target, n_iter = 20000, x_1, adapt="None", cov_estimator="Sample covariance", t_adapt = Inf){
 
   start = Sys.time()
 
@@ -107,7 +107,6 @@ mcmc = function(target, n_iter = 100, x_1, adapt="None", cov_estimator="Sample c
         }
         if (cov_estimator=="Shrinkage estimator"){
           X_until_now = X[1:(i-1),]
-          covariance=cor.shrink(X_until_now)
           lambda = attr(covariance,"lambda")
           sigma=s_d*covariance
           sigma=sigma[(1:d),(1:d)]
@@ -263,7 +262,7 @@ Posdef <- function (n, ev = runif(n, 0, 10)) {
   Z <- t(O) %*% diag(ev) %*% O
   return(Z)
 }
-sigmaPD <- Posdef(n=8)
+#sigmaPD <- Posdef(n=8)
 
 pi_norm_corr= function(x) {
   d=8
@@ -316,23 +315,25 @@ plotTarget = function(target, d, num_values){
 plotIterations = function(X, n_iter, title){
   plot = qplot(seq(from= 1, to=n_iter+1, by=1), X ,geom="point",
             main="",
-            xlab="Iteration index", ylab=title, xlim=c(0,n_iter+1), alpha = I(1/1000), size=I(2.5)) +
-            theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
+            xlab="Iteration index", ylab=title, xlim=c(0,n_iter+1), alpha = I(1/1000), size=I(5)) +
+            theme(title = element_text(colour='black'),
             axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
-            axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
-            geom_point(size=2, shape=19, alpha=0.1)
+            axis.line = element_line(colour="black", size = 5, linetype = "solid"))+
+            geom_point(size=2, shape=19, alpha=0.1)+theme_set(theme_gray(base_size = 16))
   return(plot)
 }
 
 
 plotComponents = function(X, Y , Xtitle, Ytitle){
-  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
-    theme(axis.title.x = element_text(size = 12), title = element_text(colour='black'),
+  plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(5)) +
+    theme(title = element_text(colour='black'),
           axis.text.x=element_text(colour="black"), axis.text.y=element_text(colour="black"),
-          axis.line = element_line(colour="black", size = 1, linetype = "solid"))+
-          geom_point(size=2, shape=19, alpha=0.1)
+          axis.line = element_line(colour="black", size = 5, linetype = "solid"))+
+          geom_point(size=2, shape=19, alpha=0.1)+theme_set(theme_gray(base_size = 16))
   return(plot)
 }
+
+
 
 plotComponents3D = function(X, Y , Xtitle, Ytitle){
   plot = qplot(X, Y ,geom="point", main="", xlab=Xtitle, ylab=Ytitle, alpha = I(1/1000), size=I(2.5)) +
@@ -397,15 +398,18 @@ plotACF = function(X, title){
 # apply(X_chain[2:11],2,mean)
 
 
-#Mov_mean<-function(X,window=2000, col_num=1) {
-#  data_to_consider=as.matrix(X$X[,col_num])
-#  chain_row=nrow(data_to_consider)
-#  chain_col=ncol(data_to_consider)
-#  fin_matrix=matrix(NA,ncol = chain_col, nrow =chain_row-window+1 )
-#  for (i in 1:(chain_row-window+1)){
-#    ext=(i+(window-1))
-#    data=as.matrix(data_to_consider[i:ext,])
-#    fin_matrix[i,]=apply(data,2,mean)
-#  }
-#  return(fin_matrix)
-#}
+Mov_mean<-function(X,window=20, col_num=1) {
+  data_to_consider=as.matrix(X$X[,col_num])
+  chain_row=nrow(data_to_consider)
+  chain_col=ncol(data_to_consider)
+  fin_matrix=matrix(NA,ncol = chain_col, nrow =chain_row-window+1)
+ for (i in 1:(chain_row-window+1)){
+    ext=(i+(window-1))
+    data=as.matrix(data_to_consider[i:ext,])
+    fin_matrix[i,]=apply(data,2,mean)
+  }
+  return(fin_matrix)
+}
+
+
+
