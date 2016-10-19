@@ -12,7 +12,6 @@ library(gridExtra)
 # Still to implement
 # ------------------
 # Burn in
-# Do something with the optimal alpha
 # Suboptimality factor
 # Implement and test higher dimensional problem
 # Speed up code
