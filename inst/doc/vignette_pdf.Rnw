@@ -69,7 +69,7 @@ X_MH = mcmc(target = pi_norm_corr,
          adapt=adapt)
 @
 
-<<mh_on_correlated_guassian_plots,out.width='0.5\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the first graph", echo=FALSE>>=
+<<mh_on_correlated_guassian_plots,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first (left) and second(right) components of the markov chain resulting from Metropolis-Hastings (MH) on a correlated 8-dimensional Gaussian.", echo=FALSE>>=
 
 plot1=plotIterations(
                     X_MH$X[,1],
@@ -412,6 +412,8 @@ We can see that the acceptance probability is closer to the optimal 0.234 with a
 \section{Less naive covariance estimation}
 
 Naive empirical covariance estimators are unstable for high-dimensional problems with little data; the literature .
+
+rfvuerhverbqoveaqtrbrt
 
 
 Following these two adaptive MH implementations, we are now looking to use something that is less naive than the vanilla estimator for the covariance matrix. In particular we have began testing the shrinkage and thresholding estimators as modifications to AM2. We will now test whether these estimators translate into better convergence by looking at their trajectories. We then plan to include burn in, and compare all algorithms in terms of the suboptimality factor following Roberts and Rosenthal (2009).

@@ -395,19 +395,17 @@ plotACF = function(X, title){
 # #  }
 # apply(X_chain[1:10],2,mean)
 # apply(X_chain[2:11],2,mean)
-#
-# Mov_mean<-function(X,window=2000, col_num=1) {
-#   data_to_consider=as.matrix(X$X[,col_num])
-#   chain_row=nrow(data_to_consider)
-#   chain_col=ncol(data_to_consider)
-#   fin_matrix=matrix(NA,ncol = chain_col, nrow =chain_row-window+1 )
-#   for (i in 1:(chain_row-window+1)){
-#     ext=(i+(window-1))
-#     data=as.matrix(data_to_consider[i:ext,])
-#     fin_matrix[i,]=apply(data,2,mean)
-#   }
-#   return(fin_matrix)
-# }
-#
-#
-# plot(Mov_mean(X))
+
+
+#Mov_mean<-function(X,window=2000, col_num=1) {
+#  data_to_consider=as.matrix(X$X[,col_num])
+#  chain_row=nrow(data_to_consider)
+#  chain_col=ncol(data_to_consider)
+#  fin_matrix=matrix(NA,ncol = chain_col, nrow =chain_row-window+1 )
+#  for (i in 1:(chain_row-window+1)){
+#    ext=(i+(window-1))
+#    data=as.matrix(data_to_consider[i:ext,])
+#    fin_matrix[i,]=apply(data,2,mean)
+#  }
+#  return(fin_matrix)
+#}
