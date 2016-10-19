@@ -396,3 +396,12 @@ iterations<-c(seq(from= 1, to=n_iter+1, by=1))  #costruct the sequence of iterat
 # #  }
 # apply(X_chain[1:10],2,mean)
 # apply(X_chain[2:11],2,mean)
+
+Mov_mean<-function(X,window=2){
+  fin_matrix=matrix(NA,ncol = ncol(X), nrow =nrow(X)-window+1 )
+  for (i in 1:(nrow(X)-window+1)){
+    data=as.matrix(X[i:(i+(window-1)),])
+    fin_matrix[i,]=apply(data,2,mean)
+  }
+  return(fin_matrix)
+}
