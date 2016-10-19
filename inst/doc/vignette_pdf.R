@@ -11,7 +11,7 @@ X_MH = mcmc(target = pi_norm_corr,
          x_1 = x_1,
          adapt=adapt)
 
-## ----mh_on_correlated_guassian_plots,out.width='0.5\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the first graph", echo=FALSE----
+## ----mh_on_correlated_guassian_plots,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first (left) and second(right) components of the markov chain resulting from Metropolis-Hastings (MH) on a correlated 8-dimensional Gaussian.", echo=FALSE----
 
 plot1=plotIterations(
                     X_MH$X[,1],
@@ -26,6 +26,8 @@ plot2=plotIterations(
 grid.arrange(plot1, plot2, ncol=2)
 
 
+## ----mh_on_correlated_guassian_plots2,out.width='0.5\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the second graph", echo=FALSE----
+
 plot3=plotComponents(
                     X_MH$X[,1],
                     X_MH$X[,2],
@@ -34,12 +36,16 @@ plot3=plotComponents(
                     )
 plot3
 
-plot4=plotIterations(X_MH$acceptance_rates, n_iter, "Alpha")
-plot4
+## ----mh_on_correlated_guassian_plots3,out.width='0.5\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the third graph", echo=FALSE----
 
 plot5=plotIterations(X_MH$sample_mean[,1], n_iter, "Sample expected values")
 plot5
 
+
+## ----mh_on_correlated_guassian_plots4,out.width='0.5\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the fourth graph", echo=FALSE----
+
+plot5=plotIterations(X_MH$sample_mean[,1], n_iter, "Sample expected values")
+plot5
 
 
 ## ----am_on_correlated_guassian-------------------------------------------

@@ -370,19 +370,19 @@ plotACF = function(X, title){
 ############################################################################
 # Testing the MCMC function
 ############################################################################
-n_iter = 100000     #  Total number of iterations
-t_adapt = 1000    #  Time step at which adaptation begins
-x_1 = rep(5,8)    #  Vector of inital values
-adapt = "AM"      #  Choose the type of adaptation. "AM" or "None" currently.
-cov_estimator="Sample covariance"    #  Choose the type of covariance matrix estimator. "Sample covariance", "Shrinkage estimator" or "Thresholding estimator".
+#n_iter = 100000     #  Total number of iterations
+#t_adapt = 1000    #  Time step at which adaptation begins
+#x_1 = rep(5,8)    #  Vector of inital values
+#adapt = "AM"      #  Choose the type of adaptation. "AM" or "None" currently.
+#cov_estimator="Sample covariance"    #  Choose the type of covariance matrix estimator. "Sample covariance", "Shrinkage estimator" or "Thresholding estimator".
 
-X = mcmc(target = pi_norm_corr, n_iter = n_iter, x_1 = x_1, adapt=adapt, cov_estimator, t_adapt = t_adapt)
+#X = mcmc(target = pi_norm_corr, n_iter = n_iter, x_1 = x_1, adapt=adapt, cov_estimator, t_adapt = t_adapt)
 
-plot1=plotIterations(X$X[,1], 1000, title="Values of the first MC component")
+#plot1=plotIterations(X$X[,1], 1000, title="Values of the first MC component")
 
 
 
-iterations<-c(seq(from= 1, to=n_iter+1, by=1))  #costruct the sequence of iteration steps
+#iterations<-c(seq(from= 1, to=n_iter+1, by=1))  #costruct the sequence of iteration steps
 
 
 #moving_accep=plot(moving_acceptance(n_moving, n_iter, X))
@@ -396,18 +396,18 @@ iterations<-c(seq(from= 1, to=n_iter+1, by=1))  #costruct the sequence of iterat
 # apply(X_chain[1:10],2,mean)
 # apply(X_chain[2:11],2,mean)
 
-Mov_mean<-function(X,window=2000, col_num=1) {
-  data_to_consider=as.matrix(X$X[,col_num])
-  chain_row=nrow(data_to_consider)
-  chain_col=ncol(data_to_consider)
-  fin_matrix=matrix(NA,ncol = chain_col, nrow =chain_row-window+1 )
-  for (i in 1:(chain_row-window+1)){
-    ext=(i+(window-1))
-    data=as.matrix(data_to_consider[i:ext,])
-    fin_matrix[i,]=apply(data,2,mean)
-  }
-  return(fin_matrix)
-}
+#Mov_mean<-function(X,window=2000, col_num=1) {
+#  data_to_consider=as.matrix(X$X[,col_num])
+#  chain_row=nrow(data_to_consider)
+#  chain_col=ncol(data_to_consider)
+#  fin_matrix=matrix(NA,ncol = chain_col, nrow =chain_row-window+1 )
+#  for (i in 1:(chain_row-window+1)){
+#    ext=(i+(window-1))
+#    data=as.matrix(data_to_consider[i:ext,])
+#    fin_matrix[i,]=apply(data,2,mean)
+#  }
+#  return(fin_matrix)
+#}
 
 
-plot(Mov_mean(X))
+#plot(Mov_mean(X))
