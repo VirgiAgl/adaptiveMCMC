@@ -14,11 +14,11 @@
 
 \maketitle
 
-\section{Introduction to adaptive MCMC - the AM algorithm}
+\section{Introduction to adaptive MCMC and the AM algorithm}
 
 MCMC algorithms allow sampling from complicated, high-dimensional distributions. Choice of the proposal distribution (from which samples are taken in an attempt to approximate sampling from the target distribution $\pi$) determines the ability of the algorithm to explore the parameter space fully and hence draw a good sample. Adaptive MCMC algorithms tackle this challenge by using samples already generated to learn about the target distribution; they push this knowledge back to the choice of proposal distribution iteratively.
 
-This project explores adaptive MCMC algorithms existing in the literature that use covariance estimators to improve convergence to a target distribution supported on a subset of $\mathbb{R}^d$. In this schema we learn about the target distribution $\pi$ through estimation of its correlation structure from the MCMC samples. We use this correlation structure to improve our estimate of the target.
+This project explores adaptive MCMC algorithms existing in the literature that use covariance estimators to improve convergence to a target distribution supported on a subset of $\mathbb{R}^d$. In this schema we learn about the target distribution $\pi$ through estimation of its correlation structure from the MCMC samples. We use this correlation structure to improve our estimate of the target. The performance of the algorithm depends heavily on the choice of the proposal distribution and its covariance structure. Different choices for the proposal covariance matrix may lead to different results. On the one hand, if the proposal is too narrow, the parameter space won’t be properly explored. On the other hand, if the proposal is too wide, the rejection rate may very high. In order to obtain a chain that adapts properly and settles down to rapid mixing, we need to select an optimal value for the covariance matrix.  Roberts et al. (1997) have first shown that, under specific assumption about the target distribution, the optimal value for the proposed covariance matrix is such that the acceptance rate of the algorithm is $0.234$, independently on the d-dimensional target distribution with iid components. An optimal acceptance rate of $0.234$ will be used to compare the performance of the algorithms discussed in this report.
 
 We first implement an adaptive MCMC algorithm AM \citep{haario2001} which is a modification of the random walk Metropolis-Hastings algorithm. In AM the proposal distribution is updated at time $t$ to be a normal distribution centered on the current point $X_{t-1}$ with covariance $C_t(X_0, ..., X_{t-1})$ that depends on the the whole history of the chain. The use of historic states means the resulting chain is non-markovian, and reversibility conditions are not satisfied. Haario et al show that, with a small update to the usual Metropolis-Hastings acceptance probability, the right ergodic properties and correct simulation of the target distribution none the less remain. The probability with which to accept candidate points in the chain becomes:
 
@@ -43,7 +43,7 @@ $$
 \bar{X}_{t+1} = \frac{t \bar{X}_{t}  + X_{t+1}}{t+1}
 $$
 
-Because of the instability of the covariance matrix, to implement the adaptivity we first run the algorithm with no change to the covariance of the proposal distribution. The adaptation starts at a user defined point in time, and until this time the covariance of the proposal is chosen to represent our best knowledge of the target distribution.
+Because of the instability of the covariance matrix, to implement the adaptivity we first run the algorithm with no change to the covariance of the proposal distribution. The adaptation starts at a user defined point in time, and until this time the covariance of the proposal is chosen to represent our best knowledge of the target distribution. We use a normal with no correlation structure thorughout this report.
 
 \section{An example - testing the AM algorithm}
 
@@ -56,7 +56,7 @@ $$
 $B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension. We have chosen the correlated Guassian distribution as targetting this demonstrates how the use of empirical covariance improves convergence - we learn the target's covariance as we move through steps of the MCMC. The banana-shaped distribution is an additional example with an irregular shape. We use this to test the ability of the markov chain to fully explore the state space with and without adaption. We first run our implementation of the usual Metropolis-Hasting algorithm, and the AM adaptation modification of this, each time targetting $N(0,\Sigma)$. We have chosen $\Sigma$ to be generated from eigenvalues chosen unifromly at random on [1,10].
 
 
-<<initialisations>>=
+<<initialisations, eval=FALSE>>=
 
 d = 8
 n_iter = 200     #  Total number of iterations  = 100000 todo
@@ -99,7 +99,7 @@ plot3
 
 <<mh_on_correlated_guassian_plots3,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap="The expectation calculated using the sample generated with Metropolis-Hasting targetting the correlated Guassian.", echo=FALSE>>=
 
-plot5=plotIterations(X_MH$sample_mean[,1], n_iter, "Sample expectation")
+plot5=plotIterations(X_MH$sample_mean[,1], n_iter, "Sample expectation, 1st component")
 plot5
 
 @
@@ -139,145 +139,100 @@ plot9
 
 @
 
-<<am_on_correlated_guassian4,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap=".", echo=FALSE>>=
-plot10=plotIterations(X_AM$sample_mean[,1], n_iter, "Sample expection for the first component of MC")
+<<am_on_correlated_guassian4,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap="The expectation calculated using the sample generated with the AM algorithm targetting the correlated Guassian", echo=FALSE>>=
+plot10=plotIterations(X_AM$sample_mean[,1], n_iter, "Sample expectation, 1st component")
 plot10
 
 @
 
 AM is able to explore the state space, adapt properly and settle down to rapid mixing. We see an improved acceptance rate.
 
-<<mh_am_banana>>=
+<<mh_am_banana,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first and second components of the samples resulting from MH (left) and AM (right) targetting an 8-dimensional banana shaped distribution.", echo=FALSE>>=>>=
 
-x_1 = rep(5,2)      #  Vector of inital values
-target = pi_banana
-
-
-X_MH_banana = mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt="None"
-         )
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_MH_banana.rda')
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_AM_banana.rda')
 
 plot11=plotComponents(
                     X_MH_banana$X[,2],
                     X_MH_banana$X[,1],
-                    Xtitle = "First component of the MC",
-                    Ytitle = "Second component of the MC"
+                    Xtitle = "1st component",
+                    Ytitle = "2nd component"
                     )
-
-X_AM_banana = mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         t_adapt = t_adapt,
-         adapt="AM"
-         )
 
 plot12=plotComponents(
                     X_AM_banana$X[,2],
                     X_AM_banana$X[,1],
-                    Xtitle = "First component of the MC",
-                    Ytitle = "Second component of the MC"
+                    Xtitle = "1st component",
+                    Ytitle = "2nd component"
                     )
 grid.arrange(plot11, plot12, ncol=2)
 
 
 @
 
-We now explore a slight modification to the adaptation scheme AM2\citep{roberts2009}, that uses stochastic stabilisation rather than the numerical stabilisation of AM. Roberts and Rosenthal use a mixture of Gaussians as the proposal distribution: with proportion $\beta$ a normal uncorrelated distribution is mixed with a correlated normal distribution.
+We now explore a slight modification to the adaptation scheme AM2\citep{roberts2009}, that uses stochastic stabilisation rather than the numerical stabilisation of AM. Roberts and Rosenthal use a mixture of Gaussians as the proposal distribution: with proportion $\beta$ a normal uncorrelated distribution is mixed with a correlated normal distribution. The proposal becomes:
 
 $$
 Q_n(x,\cdot) = (1-\beta) N(x,s_d \Sigma_n) + \beta (N(x,(0.1^2)I_d/d)
 $$
 
-TODO Discuss the problems with starting dimension here.
-
-%The results for our implementation of AM2 are as follows.
-
-%We have used a higher dimensional normal distributionfor the proposal $20$ and the banana target $3$. Notice that the point at which we start adapting is determined by $d$, the dimension of the target distribution. The algorithm performs well when this $d$ is high; we believe this is due to the point at which the adaptation starts. We have thus approximated a 3-dimensional banana with a 20-dimensional normal gaussian distribution. This forces the adaptation to start later. We would like to further investigate this effect, and explore various dimensional spaces.
+Our implementation, AM2, is otherwise the same as AM1. We choose to leave the choice of the time at which the adaptation is introduced to the user; Roberts and Rosenthal specify the adaptation time to be when there have been more than $2d$ iterations but we find better performance with a longer period of standard random walk Metropolis-Hastings first. The results for our implementation of AM2 are as follows.
 
 
+<<am1_am2_banana,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first component of the samples resulting from AM1 (left) and AM2 (right) targetting an 8-dimensional banana shaped distribution.", echo=FALSE>>=>>=
 
-<<am1_am2_banana, fig.width=5, fig.cap="The first component of the 8-dimensional banana shaped distribution targetted using AM (left) and AM2 (right).">>=
-
-x_1 = rep(5,8)      #  Vector of inital values
-target = pi_banana8
-
-
-X_AM2_banana = mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt="AM2"
-         )
-
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_AM2_banana.rda')
 
 plot13=plotIterations(
                     X_AM_banana$X[,1],
                     n_iter,
-                    title="Values of the first MC component"
+                    title="1st component"
                     )
 plot14=plotIterations(
                     X_AM2_banana$X[,1],
                     n_iter,
-                    title="Values of the first MC component"
+                    title="1st component"
                     )
 
-grid.arrange(plot13, plot14, ncol=2)
+grid.arrange(plot13, plot14, nrow=2)
 
 @
 
 
+\section{Less naive covariance estimation}
+
+
+The usual empirical covariance matrix estimator used so far in the adaptive AM and AM2 algorithms is optimal in the classical setting with large samples and fixed low dimensions. This estimator performs poorly in the high dimensional setting and in particular when the dimension of the parameter space is larger than the number of observations. In the recent literature, several alternative covariance matrix estimation techniques have been proposed. In this paper we will focus on two different regularization techniques: the shrinkage estimator and the Cholesky-based method.
+
+Define the empirical covariance matrix as:
+
+%todo
+
+where:
+
+%todo
+
+Define a target identity matrix as $D=\text{diag}(d)$ where $d$ represents the dimension of the problem. The idea of shrinkage estimation of the covariance matrix is to take a weighted average of the empirical covariance matrix and the target matrix given a parameter $\lambda$ representing the shrinkage intensity, (see Sch\aferand Strimmer (2005) for its computation ).The covariance matrix used in the algorithm can be defined as:
+
+
+$\hat{C} = (1-\lambda) \hat{\Sigma} + \lambda*\hat{D}$
+
+Notice that $0 < \lambda< 1$. When $\lambda=0$ no shrinkage is applied to the sample covariance matrix and the empirical covariance matrix is used. In contrast $\lambda=1$ is associated with a complete shrinkage of all pairwise covariances. In this case, we are thus ignoring the existence of any covariances among the random variables considered.
+It is possible to show that, under general conditions, there exists a shrinkage intensity for which the resulting shrinkage estimator contains less estimation error than the original empirical estimator; see James and Stein (1961). As an alternative to both the empirical and the shrinkage estimator of the covariance matrix, we have used a regularization techniques based on the Cholesky decomposition of the covariance matrix (ref). Consider a random vector X=() with covariance matrix given by $Sigma$.
+Define sigma=formula to be the modified Cholesky decomposition of the covariance matrix where $D$ is diagonal and $L$ is lower triangular with one on the diagonal. The Cholesky-based method is based on the idea of bounding the Cholesky factor L that is introducing sparsity in the Cholesky factor L estimating only the first k sub diagonal and setting the rest to zero.
+The bounding parameter k must be less than min(n-1,p). Notice that a similar approach for bounding the inverse of the covariance matrix has been proposed by (). However, (Authors ) have shown that the Cholesky based regularization method can be applied directly to the covariance matrix itself to obtain a sparse estimator with guaranteed positive definiteness.
+In order to reduce the computational cost of the algorithm, the shrinkage estimator of the covariance structure has been computed using a recursion formula similar to (x). On the contrary, the Cholesky-based covariance estimator has been evaluated at each step. Whilst this negatively impact on the running-time of the algorithm, it doesn’t affect its performance in terms of convergence rate $\alpha$.
 
 
 <<am1_am2_banana_diffCov, fig.width=5 >>=
-x_1 = rep(5,8)      #  Vector of inital values
-cov_estimator1="Shrinkage estimator"
-cov_estimator2="Thresholding estimator"
-target = pi_banana8
-
-X_MH_banana = mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt="None"
-         )
 
 
-X_AM_banana = mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         t_adapt = t_adapt,
-         adapt="AM"
-         )
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_AM_sh_banana.rda')
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_AM_th_banana.rda')
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_AM2_th_banana.rda')
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_AM2_sh_banana.rda')
 
-X_AM_banana_sh= mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt="AM",
-         t_adapt = t_adapt,
-         cov_estimator=cov_estimator1
-         )
 
-X_AM2_banana_sh = mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt="AM2",
-         cov_estimator=cov_estimator1
-         )
-
-X_AM_banana_th= mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt="AM",
-         t_adapt = t_adapt,
-         cov_estimator=cov_estimator2
-         )
-
-X_AM2_banana_th = mcmc(target = target,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt="AM2",
-         cov_estimator=cov_estimator2
-         )
 
 iteration=seq(from= 1, to=n_iter+1, by=1)
 #data=data.frame(iteration_count=iteration, am_alpha=X_AM_banana_sh$acceptance_rates)
@@ -286,13 +241,13 @@ iteration=seq(from= 1, to=n_iter+1, by=1)
 df1<-data.frame(iterations=iteration,acceptance_probability=X_MH_banana$acceptance_rates)
 df2<-data.frame(iterations=iteration,acceptance_probability=X_AM_banana$acceptance_rates)
 df3<-data.frame(iterations=iteration,acceptance_probability=X_AM2_banana$acceptance_rates)
-df4<-data.frame(iterations=iteration,acceptance_probability=X_AM_banana_sh$acceptance_rates)
-df5<-data.frame(iterations=iteration,acceptance_probability=X_AM2_banana_sh$acceptance_rates)
-df6<-data.frame(iterations=iteration,acceptance_probability=X_AM_banana_th$acceptance_rates)
-df7<-data.frame(iterations=iteration,acceptance_probability=X_AM2_banana_th$acceptance_rates)
+df4<-data.frame(iterations=iteration,acceptance_probability=X_AM_sh_banana$acceptance_rates)
+df5<-data.frame(iterations=iteration,acceptance_probability=X_AM2_sh_banana$acceptance_rates)
+df6<-data.frame(iterations=iteration,acceptance_probability=X_AM_th_banana$acceptance_rates)
+df7<-data.frame(iterations=iteration,acceptance_probability=X_AM2_th_banana$acceptance_rates)
 df8<-data.frame(iterations=iteration,acceptance_probability=rep(0.234,n_iter+1))
 
-ggplot(df1,aes(iterations,acceptance_probability))+geom_line(aes(color="MH"))+
+ggplot(df1,aes(iteration,acceptance_probability))+geom_line(aes(color="MH"))+
       geom_line(data=df2,aes(color="AM"))+
       geom_line(data=df3,aes(color="AM2"))+
       geom_line(data=df4,aes(color="AM + shrinkage"))+
@@ -385,44 +340,6 @@ ggplot(df1,aes(x,y))+geom_line(aes(color="First line"))+
 
 @
 
-
-
-\section{A Bit About knitr}
-
-Whilst this demonstrates that the algorithms both approximately sample from the correct target distribution, there is no improvement in acceptance rate due to the adaptation steps. We require a less regular shaped target distribution to test whether adaptation improves our acceptance rate towards the optimal 0.234. For this we follow Haario et al in using a banana-shaped distribution. The following results show a significantly lower acceptance rate for the adaptive version of the algorithm.
-
-The AM algorithm with banana target:
-
-The MH algorithm with banana target:
-
-We can see that the acceptance probability is closer to the optimal 0.234 with adaptation according to Haario et al.
-
-
-
-\section{Less naive covariance estimation}
-
-$\hat{C} = (1-\lambda) \hat{\Sigma} + \lambda*\hat{D}$
-
-The usual empirical covariance matrix estimator used so far in the adaptive AM and AM2 algorithms is optimal in the classical setting with large samples and fixed low dimensions. This estimator performs poorly in the high dimensional setting and in particular when the dimension of the parameter space is larger than the number of observations. In the recent literature, several alternative covariance matrix estimation techniques have been proposed. In this paper we will focus on two different regularization techniques: the shrinkage estimator and the Cholesky-based method.
-
-Define the empirical covariance matrix as:
-
-%todo
-
-where:
-
-%todo
-
-Define a target identity matrix as $D=\text{diag}(d)$ where $d$ represents the dimension of the problem. The idea of shrinkage estimation of the covariance matrix is to take a weighted average of the empirical covariance matrix and the target matrix given a parameter $\lambda$ representing the shrinkage intensity, (see Sch\aferand Strimmer (2005) for its computation ).The covariance matrix used in the algorithm can be defined as:
-
-
-$\hat{C} = (1-\lambda) \hat{\Sigma} + \lambda*\hat{D}$
-
-Notice that $0 < \lambda< 1$. When $\lambda=0$, no shrinkage is applied to the sample covariance matrix and the empirical covariance matrix is used. In contrast, $\lambda=1$ is associated to a complete shrinkage of all pairwise covariances. In this case, we are thus ignoring the existence of any covariances among the random variables considered.
-It is possible to show that, under general conditions, there exists a shrinkage intensity for which the resulting shrinkage estimator contains less estimation error than the original empirical estimator; see James and Stein (1961). As an alternative to both the empirical and the shrinkage estimator of the covariance matrix, we have used a regularization techniques based on the Cholesky decomposition of the covariance matrix (ref). Consider a random vector X=() with covariance matrix given by $Sigma$.
-Define sigma=formula to be the modified Cholesky decomposition of the covariance matrix where $D$ is diagonal and $L$ is lower triangular with one on the diagonal. The Cholesky-based method is based on the idea of bounding the Cholesky factor L that is introducing sparsity in the Cholesky factor L estimating only the first k sub diagonal and setting the rest to zero.
-The bounding parameter k must be less than min(n-1,p). Notice that a similar approach for bounding the inverse of the covariance matrix has been proposed by (). However, (Authors ) have shown that the Cholesky based regularization method can be applied directly to the covariance matrix itself to obtain a sparse estimator with guaranteed positive definiteness.
-In order to reduce the computational cost of the algorithm, the shrinkage estimator of the covariance structure has been computed using a recursion formula similar to (x). On the contrary, the Cholesky-based covariance estimator has been evaluated at each step. Whilst this negatively impact on the running-time of the algorithm, it doesn’t affect its performance in terms of convergence rate $\alpha$.
 
 \section{\LaTeX}
 
