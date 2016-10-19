@@ -264,7 +264,7 @@ Posdef <- function (n, ev = runif(n, 0, 10)) {
   Z <- t(O) %*% diag(ev) %*% O
   return(Z)
 }
-#sigmaPD <- Posdef(n=8)
+sigmaPD <- Posdef(n=8)
 
 pi_norm_corr= function(x) {
   d=8
@@ -349,23 +349,23 @@ plotACF = function(X, title){
 }
 
 
-
-
-plot1=plotIterations(X$X[,1], 1000, title="Values of the first MC component")
-plot2=plotIterations(X$X[,2], 1000, title="Values of the second MC component")
-grid.arrange(plot1, plot2, ncol=2)
-
-plot3=plotComponents(X$X[,1], X$X[,2],  Xtitle = "First component of the MC", Ytitle = "Second component of the MC")
-plot3
-
-plot4=plotIterations(X$acceptance_rates, 5000, "Alpha")
-#plot4
-
-plot5=plotIterations(X$sample_mean[,1], 5000, "Sample expected values")
-#plot5
-
-plotACF(X$X[,2], "Autocorrelation function for the first MC component")
-
+#
+#
+# plot1=plotIterations(X$X[,1], 1000, title="Values of the first MC component")
+# plot2=plotIterations(X$X[,2], 1000, title="Values of the second MC component")
+# grid.arrange(plot1, plot2, ncol=2)
+#
+# plot3=plotComponents(X$X[,1], X$X[,2],  Xtitle = "First component of the MC", Ytitle = "Second component of the MC")
+# plot3
+#
+# plot4=plotIterations(X$acceptance_rates, 5000, "Alpha")
+# #plot4
+#
+# plot5=plotIterations(X$sample_mean[,1], 5000, 'Sample expected values')
+# #plot5
+#
+# plotACF(X$X[,2], 'Autocorrelation function for the first MC component')
+#
 
 
 ############################################################################
@@ -388,11 +388,11 @@ iterations<-c(seq(from= 1, to=n_iter+1, by=1))  #costruct the sequence of iterat
 
 #moving_accep=plot(moving_acceptance(n_moving, n_iter, X))
 #n_moving=10
-
-moving_alpha = rep(NA, n_iter/n_moving)
-#  moving_alpha[1]= X$acceptances[n_moving]/n_moving
-#  for (i in seq(2*n_moving, n_iter, by=n_moving)) {
-#    moving_alpha[i/n_moving]=(X$acceptances[i]-X$acceptances[i-n_moving])/n_moving
-#  }
-apply(X_chain[1:10],2,mean)
-apply(X_chain[2:11],2,mean)
+#
+# moving_alpha = rep(NA, n_iter/n_moving)
+# #  moving_alpha[1]= X$acceptances[n_moving]/n_moving
+# #  for (i in seq(2*n_moving, n_iter, by=n_moving)) {
+# #    moving_alpha[i/n_moving]=(X$acceptances[i]-X$acceptances[i-n_moving])/n_moving
+# #  }
+# apply(X_chain[1:10],2,mean)
+# apply(X_chain[2:11],2,mean)

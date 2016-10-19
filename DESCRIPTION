@@ -1,4 +1,4 @@
-Package: adaptiveMH
+Package: adaptiveMCMC
 Type: Package
 Title: Adaptive MCMC implementation
 Version: 0.1.0

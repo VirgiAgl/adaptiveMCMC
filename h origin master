@@ -1,0 +1,288 @@
+[1mdiff --git a/DESCRIPTION b/DESCRIPTION[m
+[1mindex c8c34f1..1737319 100644[m
+[1m--- a/DESCRIPTION[m
+[1m+++ b/DESCRIPTION[m
+[36m@@ -1,4 +1,4 @@[m
+[31m-Package: adaptiveMH[m
+[32m+[m[32mPackage: adaptiveMCMC[m
+ Type: Package[m
+ Title: Adaptive MCMC implementation[m
+ Version: 0.1.0[m
+[1mdiff --git a/adaptiveMH.Rproj b/adaptiveMH.Rproj[m
+[1mdeleted file mode 100644[m
+[1mindex 497f8bf..0000000[m
+[1m--- a/adaptiveMH.Rproj[m
+[1m+++ /dev/null[m
+[36m@@ -1,20 +0,0 @@[m
+[31m-Version: 1.0[m
+[31m-[m
+[31m-RestoreWorkspace: Default[m
+[31m-SaveWorkspace: Default[m
+[31m-AlwaysSaveHistory: Default[m
+[31m-[m
+[31m-EnableCodeIndexing: Yes[m
+[31m-UseSpacesForTab: Yes[m
+[31m-NumSpacesForTab: 2[m
+[31m-Encoding: UTF-8[m
+[31m-[m
+[31m-RnwWeave: Sweave[m
+[31m-LaTeX: pdfLaTeX[m
+[31m-[m
+[31m-AutoAppendNewline: Yes[m
+[31m-StripTrailingWhitespace: Yes[m
+[31m-[m
+[31m-BuildType: Package[m
+[31m-PackageUseDevtools: Yes[m
+[31m-PackageInstallArgs: --no-multiarch --with-keep.source[m
+[1mdiff --git a/inst/doc/vignette_pdf.R b/inst/doc/vignette_pdf.R[m
+[1mindex 538db3a..5ada836 100644[m
+[1m--- a/inst/doc/vignette_pdf.R[m
+[1m+++ b/inst/doc/vignette_pdf.R[m
+[36m@@ -1,94 +1,19 @@[m
+[31m-## ----chunkname-----------------------------------------------------------[m
+[31m-library(adaptiveMH)[m
+[32m+[m[32m## ----am_on_correlated_guassian-------------------------------------------[m
+ [m
+[31m-n_iter = 100  #  Total number of iterations[m
+[31m-t_adapt = 50  #  Time step at which adaptation begins[m
+[32m+[m[32mn_iter = 1000  #  Total number of iterations[m
+[32m+[m[32mt_adapt = 200  #  Time step at which adaptation begins[m
+ x_1 = rep(-10,2) #  Vector of inital values[m
+ adapt = "AM"  #  Choose the type of adaptation.[m
+ [m
+[31m-X = mcmc(target = pi_norm, [m
+[31m-	 n_iter = n_iter, [m
+[31m-	 x_1 = x_1, [m
+[31m-	 adapt=adapt, [m
+[32m+[m[32mX = mcmc(target = pi_norm,[m
+[32m+[m	[32m n_iter = n_iter,[m
+[32m+[m	[32m x_1 = x_1,[m
+[32m+[m	[32m adapt=adapt,[m
+ 	 t_adapt = t_adapt[m
+ 	)[m
+[31m-plot(X[,1], [m
+[31m-     xlab="Iteration index", [m
+[32m+[m[32mplot(X[,1],[m
+[32m+[m[32m     xlab="Iteration index",[m
+      ylab="First coordinate of the AM Markov chain"[m
+     )[m
+ [m
+[31m-hist(X[,1], [m
+[31m-     xlab="First coordinate of the AM Markov chain", [m
+[31m-     ylab="Frequency", [m
+[31m-     breaks=50, [m
+[31m-     main=""[m
+[31m-    )[m
+[31m-[m
+[31m-library(ggplot2)[m
+[31m-[m
+[31m-iterations<-c(seq(from= 1, to=n_iter+1, by=1))[m
+[31m-[m
+[31m-plot<-qplot(iterations, [m
+[31m-	   X[,2],[m
+[31m-	   geom="point", [m
+[31m-	   main="Adaptive MCMC for multidimensional correlated Gaussian distribution", [m
+[31m-	   xlab="Iteration", [m
+[31m-	   ylab="", [m
+[31m- 	   xlim=c(0,10000), [m
+[31m-	   alpha = I(1/50),[m
+[31m-	   size=I(2.5)) +  theme(axis.title.x = element_text(size = 15), [m
+[31m-	   title = element_text(colour='black'), [m
+[31m-	   axis.text.x=element_text(colour="black"),[m
+[31m- 	   axis.text.y=element_text(colour="black"), [m
+[31m-	   axis.line = element_line(colour="black", [m
+[31m-	   			    size = 1, [m
+[31m-				    linetype = "solid"[m
+[31m-				   )[m
+[31m-				)+ [m
+[31m-				theme(axis.line = element_line(colour = "darkblue", size = 1, linetype = "solid"))[m
+[31m-plot[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-## ----chunkname2----------------------------------------------------------[m
+[31m-adapt = "None"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_norm, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-[m
+[31m-[m
+[31m-## ----chunk3--------------------------------------------------------------[m
+[31m-adapt = "AM"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_banana, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM Markov chain")[m
+[31m-[m
+[31m-[m
+[31m-## ----chunk4--------------------------------------------------------------[m
+[31m-adapt = "None"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_banana, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM markov chain")[m
+[31m-[m
+[31m-[m
+[31m-## ------------------------------------------------------------------------[m
+[31m-n_iter = 1000 #  Total number of iterations[m
+[31m-x_1 = rep(1,20) #  Vector of inital values[m
+[31m-adapt = "AM2"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_banana3, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM Markov chain")[m
+[31m-library(scatterplot3d)[m
+[31m-scatterplot3d(x=X[,2],y=X[,3],z=X[,1], xlab="Second coordinate of the AM2 Markov chain", ylab="Third coordinate of the AM2 Markov chain", zlab="First coordinate of the AM2 Markov chain", color="gold")[m
+ [m
+[1mdiff --git a/inst/doc/vignette_pdf.Rnw b/inst/doc/vignette_pdf.Rnw[m
+[1mindex 0ead6e8..33a1c11 100644[m
+[1m--- a/inst/doc/vignette_pdf.Rnw[m
+[1m+++ b/inst/doc/vignette_pdf.Rnw[m
+[36m@@ -52,73 +52,30 @@[m [m$$[m
+ f_B\left(x_1,...,x_d\right)\propto \exp \left[ -x_1^2/200 - \frac{1}{2} \left(x_2 + Bx_1^2-100B\right)^2 - \frac{1}{2} \left(x_3^2 + x_4^2 + ... + x_d^2\right) \right][m
+ $$[m
+ [m
+[31m-$B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension.[m
+[32m+[m[32m$B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension. We have chosen the correlated Guassian distribution as targetting this demonstrates how the use of empirical covariance improves convergence - we learn the target's covariance as we move through steps of the MCMC. The banana-shaped distribution is an additional example with an irregular shape. We use this to test the ability of the markov chain to fully explore the state space with and without adaption. We first run our implementation of the AM algorithm targetting $N(0,\Sigma)$ with %todo what is the correlation structure used?[m
+ [m
+[31m-% below is a code chunk. You don't have to give it a name, but if you do[m
+[31m-% it MUST be unique.[m
+[31m-<<chunkname>>=[m
+[31m-library(adaptiveMH)[m
+ [m
+[31m-n_iter = 100  #  Total number of iterations[m
+[31m-t_adapt = 50  #  Time step at which adaptation begins[m
+[32m+[m[32m<<am_on_correlated_guassian>>=[m
+[32m+[m
+[32m+[m[32mn_iter = 1000  #  Total number of iterations[m
+[32m+[m[32mt_adapt = 200  #  Time step at which adaptation begins[m
+ x_1 = rep(-10,2) #  Vector of inital values[m
+ adapt = "AM"  #  Choose the type of adaptation.[m
+ [m
+[31m-X = mcmc(target = pi_norm, [m
+[31m-	 n_iter = n_iter, [m
+[31m-	 x_1 = x_1, [m
+[31m-	 adapt=adapt, [m
+[32m+[m[32mX = mcmc(target = pi_norm,[m
+[32m+[m	[32m n_iter = n_iter,[m
+[32m+[m	[32m x_1 = x_1,[m
+[32m+[m	[32m adapt=adapt,[m
+ 	 t_adapt = t_adapt[m
+ 	)[m
+[31m-plot(X[,1], [m
+[31m-     xlab="Iteration index", [m
+[32m+[m[32mplot(X[,1],[m
+[32m+[m[32m     xlab="Iteration index",[m
+      ylab="First coordinate of the AM Markov chain"[m
+     )[m
+ [m
+[31m-hist(X[,1], [m
+[31m-     xlab="First coordinate of the AM Markov chain", [m
+[31m-     ylab="Frequency", [m
+[31m-     breaks=50, [m
+[31m-     main=""[m
+[31m-    )[m
+[31m-[m
+[31m-library(ggplot2)[m
+[31m-[m
+[31m-iterations<-c(seq(from= 1, to=n_iter+1, by=1))[m
+[31m-[m
+[31m-plot<-qplot(iterations, [m
+[31m-	   X[,2],[m
+[31m-	   geom="point", [m
+[31m-	   main="Adaptive MCMC for multidimensional correlated Gaussian distribution", [m
+[31m-	   xlab="Iteration", [m
+[31m-	   ylab="", [m
+[31m- 	   xlim=c(0,10000), [m
+[31m-	   alpha = I(1/50),[m
+[31m-	   size=I(2.5)) +  theme(axis.title.x = element_text(size = 15), [m
+[31m-	   title = element_text(colour='black'), [m
+[31m-	   axis.text.x=element_text(colour="black"),[m
+[31m- 	   axis.text.y=element_text(colour="black"), [m
+[31m-	   axis.line = element_line(colour="black", [m
+[31m-	   			    size = 1, [m
+[31m-				    linetype = "solid"[m
+[31m-				   )[m
+[31m-				)+ [m
+[31m-				theme(axis.line = element_line(colour = "darkblue", size = 1, linetype = "solid"))[m
+[31m-plot[m
+[31m-[m
+[31m-[m
+ @[m
+ In order to test the increased performance of the AM algorithm, we have compared it with the classical Metropolis-Hastings algorithm. We found the AM algorithm to be faster and to perform better in terms of acceptance rate.  Again for $10,000$ iterations of the MCMC and for a dimension $d=2$, but this time with no adaptation:[m
+ [m
+[31m-<<chunkname2>>=[m
+[31m-adapt = "None"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_norm, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-[m
+[31m-@[m
+ [m
+ \section{A Bit About knitr}[m
+ [m
+[36m@@ -126,30 +83,8 @@[m [mWhilst this demonstrates that the algorithms both approximately sample from the[m
+ [m
+ The AM algorithm with banana target:[m
+ [m
+[31m-<<chunk3>>=[m
+[31m-adapt = "AM"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_banana, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM Markov chain")[m
+[31m-[m
+[31m-@[m
+[31m-[m
+ The MH algorithm with banana target:[m
+ [m
+[31m-<<chunk4>>=[m
+[31m-adapt = "None"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_banana, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM markov chain")[m
+[31m-[m
+[31m-@[m
+[31m-[m
+ We can see that the acceptance probability is closer to the optimal 0.234 with adaptation according to Haario et al.[m
+ [m
+ We now implement an adaptation scheme that uses stochastic stabilisation rather than numerical. This algorithm (AM2), from Roberts and Rosenthal (2009), differs from AM by using a mixture of Gaussians as the proposal distribution. In proportion $\beta$ a normal uncorrelated distribution is used, and this is mixed with a correlated normal distribution.[m
+[36m@@ -161,20 +96,6 @@[m [m$$[m
+ The results for our implementation of AM2 are as follows. We have used a higher dimensional normal distribution for the proposal $20$ and the banana target $3$. Notice that the point at which we start adapting is determined by $d$, the dimension of the target distribution. The algorithm performs well when this $d$ is high; we believe this is due to the point at which the adaptation starts. We have thus approximated a 3-dimensional banana with a 20-dimensional normal gaussian distribution. This forces the adaptation to start later. We would like to further investigate this effect, and explore various dimensional spaces.[m
+ [m
+ [m
+[31m-<<>>=[m
+[31m-n_iter = 1000 #  Total number of iterations[m
+[31m-x_1 = rep(1,20) #  Vector of inital values[m
+[31m-adapt = "AM2"  #  Choose the type of adaptation. "AM" or "None" currently.[m
+[31m-[m
+[31m-X = mcmc(target = pi_banana3, n_iter = n_iter, x_1 = x_1, adapt=adapt, t_adapt = t_adapt)[m
+[31m-[m
+[31m-#plot(X[,1],xlab="Iteration index", ylab="First coordinate of the AM Markov chain")[m
+[31m-#hist(X[,1], xlab="First coordinate of the AM Markov chain", ylab="Frequency", breaks=50, main="")[m
+[31m-plot(X[,2],X[,1],col='gold', xlab="First coordinate of the AM markov chain",  ylab="Second coordinate of the AM Markov chain")[m
+[31m-library(scatterplot3d)[m
+[31m-scatterplot3d(x=X[,2],y=X[,3],z=X[,1], xlab="Second coordinate of the AM2 Markov chain", ylab="Third coordinate of the AM2 Markov chain", zlab="First coordinate of the AM2 Markov chain", color="gold")[m
+[31m-@[m
+[31m-[m
+ \section{Less naive covariance estimation}[m
+ [m
+ Naive empirical covariance estimators are unstable for high-dimensional problems with little data; the literature .[m
+[1mdiff --git a/inst/doc/vignette_pdf.pdf b/inst/doc/vignette_pdf.pdf[m
+[1mindex 1b69652..ed0be55 100644[m
+Binary files a/inst/doc/vignette_pdf.pdf and b/inst/doc/vignette_pdf.pdf differ
