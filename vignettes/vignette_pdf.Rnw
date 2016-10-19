@@ -13,7 +13,7 @@
 
 \maketitle
 
-\section{Introduction to Adaptive MCMC - the AM algorithm}
+\section{Introduction to Adaptive MCMC - the AM}
 
 MCMC algorithms allow sampling from complicated, high-dimensional distributions. Choice of the proposal distribution (from which samples are taken in an attempt to approximate sampling from the target distribution $\pi$) determines the ability of the algorithm to explore the parameter space fully and hence draw a good sample. Adaptive MCMC algorithms tackle this challenge by using samples already generated to learn about the target distribution; they push this knowledge back to the choice of proposal distribution iteratively.
 
@@ -69,7 +69,7 @@ X_MH = mcmc(target = pi_norm_corr,
          adapt=adapt)
 @
 
-<<mh_on_correlated_guassian_plots,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first (left) and second(right) components of the markov chain resulting from Metropolis-Hastings (MH) on a correlated 8-dimensional Gaussian.", echo=FALSE>>=
+<<mh_on_correlated_guassian_plots,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first (left) and second(right) components of the markov chain resulting from Metropolis-Hastings (MH) on a correlated 8-dimensional Gaussian.", echo=FALSE, cache=TRUE>>=
 
 plot1=plotIterations(
                     X_MH$X[,1],
@@ -411,8 +411,24 @@ We can see that the acceptance probability is closer to the optimal 0.234 with a
 
 \section{Less naive covariance estimation}
 
-Naive empirical covariance estimators are unstable for high-dimensional problems with little data; the literature .
+The usual empirical covariance matrix estimator used so far to performe the adaptive algorithms is optimal in the classical setting with large samples and fixed low dimensions. This estimator performs poorly in the high dimensional setting and in particular when the dimension of the parameter space is larger than the nnumber of observations. In the recent literature, sevaral alternative estimatation techiniques for the covariance matrix have been proposed. In this paper we will focus on two different regularization techniques: the shrinkage estimator and the Choleski-based regularization method.
 
+Define the empirical covariance matrix as:
+
+where
+
+.
+
+Define a target identity matrix as $D=diag(d)$ where $d$ represents the dimension of the problem. The idea of shrinkage estimation of the covariance matrix is to take a weighhted avearge of the empirical covariance matrix and the target matrix. Thus, given a parameter $\lambda$ representing the shrinkage intensity, (for its computation see Sch\"afer and Strimmer (2005) )the covariance matrix used in the algorithm can be defined as:
+
+$\hat{C} = (1-\lambda) \hat{\Sigma} + \lambda*\hat{D}$
+
+Notice that $0 < \lambda< 1$. When  $\lambda=0$, no shrinkage is applied to the  sample covariance matrix and the sample covariance matrix estimatorm is then used. In constrast, the case of $\lambda=1$ indicates a complete shrinkage of all pairwise covariances. In this case we are ignoring the existence of any covariances among the random variables considered. It is possible to show that, under general conditions, there exists a shrinkage intensity for which the resulting shrinkage estimator contains less estimation error than the original sample estimator; see James and Stein (1961).
+
+Shrinkage estimators shrink the overdispersed sample covariance
+eigenvalues
+
+As an alternative to both the empirical and the shrinkage estimator we have analyzed a regularization method based on the Cholesky decomposition of the covariance matrixz
 
 Following these two adaptive MH implementations, we are now looking to use something that is less naive than the vanilla estimator for the covariance matrix. In particular we have began testing the shrinkage and thresholding estimators as modifications to AM2. We will now test whether these estimators translate into better convergence by looking at their trajectories. We then plan to include burn in, and compare all algorithms in terms of the suboptimality factor following Roberts and Rosenthal (2009).
 

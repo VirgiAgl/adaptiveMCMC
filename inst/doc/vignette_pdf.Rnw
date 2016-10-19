@@ -13,7 +13,7 @@
 
 \maketitle
 
-\section{Introduction to Adaptive MCMC - the AM algorithm}
+\section{Introduction to Adaptive MCMC - the AM}
 
 MCMC algorithms allow sampling from complicated, high-dimensional distributions. Choice of the proposal distribution (from which samples are taken in an attempt to approximate sampling from the target distribution $\pi$) determines the ability of the algorithm to explore the parameter space fully and hence draw a good sample. Adaptive MCMC algorithms tackle this challenge by using samples already generated to learn about the target distribution; they push this knowledge back to the choice of proposal distribution iteratively.
 
@@ -413,7 +413,8 @@ We can see that the acceptance probability is closer to the optimal 0.234 with a
 
 Naive empirical covariance estimators are unstable for high-dimensional problems with little data; the literature .
 
-rfvuerhverbqoveaqtrbrt
+bdvchjdbvsuFGBWR
+
 
 
 Following these two adaptive MH implementations, we are now looking to use something that is less naive than the vanilla estimator for the covariance matrix. In particular we have began testing the shrinkage and thresholding estimators as modifications to AM2. We will now test whether these estimators translate into better convergence by looking at their trajectories. We then plan to include burn in, and compare all algorithms in terms of the suboptimality factor following Roberts and Rosenthal (2009).
