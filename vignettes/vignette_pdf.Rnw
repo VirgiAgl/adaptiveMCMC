@@ -6,7 +6,7 @@
 % The line below tells R to use knitr on this.
 %\VignetteEngine{knitr::knitr}
 
-\title{OxWaSP Module 1: Adaptive MCMC}
+\title{OxWaSP Module 1: Adaptive MCMC draft}
 \author{Virginia Aglietti \and Tamar Loach}
 
 \begin{document}
