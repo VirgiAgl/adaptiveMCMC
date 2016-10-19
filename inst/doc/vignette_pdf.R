@@ -11,7 +11,7 @@ X_MH = mcmc(target = pi_norm_corr,
          x_1 = x_1,
          adapt=adapt)
 
-## ----mh_on_correlated_guassian_plots,out.width='0.7\\textwidth',fig.cap="This is the first graph", echo=FALSE----
+## ----mh_on_correlated_guassian_plots,out.width='0.5\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the first graph", echo=FALSE----
 
 plot1=plotIterations(
                     X_MH$X[,1],
