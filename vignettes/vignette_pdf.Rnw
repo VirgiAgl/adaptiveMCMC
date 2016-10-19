@@ -10,10 +10,11 @@
 \author{Virginia Aglietti \and Tamar Loach}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \maketitle
 
-\section{Introduction to Adaptive MCMC - the AM}
+\section{Introduction to adaptive MCMC - the AM algorithm}
 
 MCMC algorithms allow sampling from complicated, high-dimensional distributions. Choice of the proposal distribution (from which samples are taken in an attempt to approximate sampling from the target distribution $\pi$) determines the ability of the algorithm to explore the parameter space fully and hence draw a good sample. Adaptive MCMC algorithms tackle this challenge by using samples already generated to learn about the target distribution; they push this knowledge back to the choice of proposal distribution iteratively.
 
@@ -31,7 +32,7 @@ $$
 C_t = s_d \text{cov}(X_0, ..., X_{t-1}) + s_d\epsilon I_d
 $$
 
-Here $\text{cov}()$ is the usual empirical covariance matrix, and the parameter $s_d = \frac{2.4^2}{d}$ \citep{gelman1996}. $\epsilon$ is chosen to be very small compared to the subset of $\mathbb{R}^d$ upon which the target function is supported. The AM algorithm is computationally feasible %Tamar What is the computional compplexity?
+Here $\text{cov}()$ is the usual empirical covariance matrix, and the parameter $s_d = \frac{2.4^2}{d}$ \citep{gelman1996}. $\epsilon$ is chosen to be very small compared to the subset of $\mathbb{R}^d$ upon which the target function is supported. The AM algorithm is computationally feasible %todo Tamar What is the computional compplexity?
 due to recursive updating of the covariance matrix on acquisition of each new sample through the relation:
 
 $$
@@ -52,107 +53,95 @@ $$
 f_B\left(x_1,...,x_d\right)\propto \exp \left[ -x_1^2/200 - \frac{1}{2} \left(x_2 + Bx_1^2-100B\right)^2 - \frac{1}{2} \left(x_3^2 + x_4^2 + ... + x_d^2\right) \right]
 $$
 
-$B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension. We have chosen the correlated Guassian distribution as targetting this demonstrates how the use of empirical covariance improves convergence - we learn the target's covariance as we move through steps of the MCMC. The banana-shaped distribution is an additional example with an irregular shape. We use this to test the ability of the markov chain to fully explore the state space with and without adaption. We first run our implementation of the AM algorithm targetting $N(0,\Sigma)$ with %todo what is the correlation structure used? The covariance matrix is generated randomly from two random uniform eigenvalues (line 257-273)
+$B > 0$ is the "bananicty" constant (set to 0.1 throughout) and $d$ is the dimension. We have chosen the correlated Guassian distribution as targetting this demonstrates how the use of empirical covariance improves convergence - we learn the target's covariance as we move through steps of the MCMC. The banana-shaped distribution is an additional example with an irregular shape. We use this to test the ability of the markov chain to fully explore the state space with and without adaption. We first run our implementation of the usual Metropolis-Hasting algorithm, and the AM adaptation modification of this, each time targetting $N(0,\Sigma)$. We have chosen $\Sigma$ to be generated from eigenvalues chosen unifromly at random on [1,10].
 
 
-<<mh_on_correlated_guassian>>=
+<<initialisations>>=
 
 d = 8
-n_iter = 200     #  Total number of iterations
+n_iter = 200     #  Total number of iterations  = 100000 todo
 x_1 = rep(5,d)      #  Vector of inital values
-t_adapt = 50      #  When to start adapting
-adapt = "None"      #  Choose the type of adaptation.
+t_adapt = 50      #  When to start adapting = 10000 todo
 
-X_MH = mcmc(target = pi_norm_corr,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt=adapt)
 @
 
-<<mh_on_correlated_guassian_plots,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first (left) and second(right) components of the markov chain resulting from Metropolis-Hastings (MH) on a correlated 8-dimensional Gaussian.", echo=FALSE, cache=TRUE>>=
+<<mh_on_correlated_guassian_plots,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first (top) and second (bottom) components of the markov chain resulting from Metropolis-Hastings (MH) targetting a correlated 8-dimensional Gaussian.", echo=FALSE>>=
 
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_MH.rda')
 
 plot1=plotIterations(
                     X_MH$X[,1],
                     n_iter,
-                    title="Values of the first MC component"
+                    title="1st component"
                     )
 plot2=plotIterations(
                     X_MH$X[,2],
                     n_iter,
-                    title="Values of the second MC component"
+                    title="2nd component"
                     )
-grid.arrange(plot1, plot2, ncol=2)
+grid.arrange(plot1, plot2, nrow=2)
 
 @
 
 
-<<mh_on_correlated_guassian_plots2,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The relationship between the first two components of the correlated Guassian. The correlation picked up by MH is visible.", echo=FALSE>>=
+<<mh_on_correlated_guassian_plots2,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap="The relationship between the first two components of the markov chain generated using Metropolis-Hasting targetting the correlated Guassian.", echo=FALSE>>=
 
 plot3=plotComponents(
                     X_MH$X[,1],
                     X_MH$X[,2],
-                    Xtitle = "First component of the MC",
-                    Ytitle = "Second component of the MC"
+                    Xtitle = "1st component",
+                    Ytitle = "2nd component"
                     )
 plot3
 @
 
+%todo do we need the graph of expectation from MH targetting the guassian?
 
-<<mh_on_correlated_guassian_plots3,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the third graph", echo=FALSE>>=
+<<mh_on_correlated_guassian_plots3,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap="The expectation calculated using the sample generated with Metropolis-Hasting targetting the correlated Guassian.", echo=FALSE>>=
 
-plot5=plotIterations(X_MH$sample_mean[,1], n_iter, "The expectation of the sample as the iterations of the MCMC progress.")
+plot5=plotIterations(X_MH$sample_mean[,1], n_iter, "Sample expectation")
 plot5
 
 @
 
-<<mh_on_correlated_guassian_plots4,out.width='0.5\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="This is the fourth graph", echo=FALSE>>=
+<<am_on_correlated_guassian,out.width='0.7\\linewidth',out.height='0.5\\linewidth',fig.align="center",fig.cap="The first (top) and second (bottom) components of the markov chain resulting from the adaptive metropolis algorithm (AM) targetting a correlated 8-dimensional Gaussian."", echo=FALSE>>=
 
-plot5=plotIterations(X_MH$sample_mean[,1], n_iter, "Sample expected values")
-plot5
-
-@
-
-<<am_on_correlated_guassian>>=
-
-adapt = "AM"       #  Choose the type of adaptation.
-cov_estimator="Sample covariance"    #  Choose the type of covariance matrix estimator.
-
-X_AM = mcmc(target = pi_norm_corr,
-         n_iter = n_iter,
-         x_1 = x_1,
-         adapt=adapt,
-         t_adapt = t_adapt,
-         cov_estimator=cov_estimator
-         )
+load(file='/data/tinkerbird/loach/adaptiveMCMC/R/data/X_AM.rda')
 
 plot6=plotIterations(
                     X_AM$X[,1],
                     n_iter,
-                    title="Values of the first MC component"
+                    title="1st component"
                     )
 plot7=plotIterations(
                     X_AM$X[,2],
                     n_iter,
-                    title="Values of the second MC component"
+                    title="2nd component"
                     )
-grid.arrange(plot6, plot7, ncol=2)
+grid.arrange(plot6, plot7, nrow=2)
+@
 
+<<am_on_correlated_guassian2,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap="The relationship between the first two components of the markov chain resulting from the adaptive metropolis algorithm (AM) targetting a correlated 8-dimensional Gaussian.", echo=FALSE>>=
 
 plot8=plotComponents(
                     X_AM$X[,1],
                     X_AM$X[,2],
-                    Xtitle = "First component of the MC",
-                    Ytitle = "Second component of the MC"
+                    Xtitle = "1st component",
+                    Ytitle = "2nd component"
                     )
 plot8
+@
 
-plot9=plotIterations(X_AM$acceptance_rates, n_iter, "Alpha")
+<<am_on_correlated_guassian3,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap="The acceptance probability in the AM algorithm targetting the correlated Guassian.", echo=FALSE>>=
+
+plot9=plotIterations(X_AM$acceptance_rates, n_iter, "Acceptance probability")
 plot9
 
+@
+
+<<am_on_correlated_guassian4,out.width='0.7\\linewidth',out.height='0.25\\linewidth',fig.align="center",fig.cap=".", echo=FALSE>>=
 plot10=plotIterations(X_AM$sample_mean[,1], n_iter, "Sample expection for the first component of MC")
 plot10
-
 
 @
 
@@ -412,26 +401,28 @@ We can see that the acceptance probability is closer to the optimal 0.234 with a
 
 \section{Less naive covariance estimation}
 
-The usual empirical covariance matrix estimator used so far to performe the adaptive algorithms is optimal in the classical setting with large samples and fixed low dimensions. This estimator performs poorly in the high dimensional setting and in particular when the dimension of the parameter space is larger than the nnumber of observations. In the recent literature, sevaral alternative estimatation techiniques for the covariance matrix have been proposed. In this paper we will focus on two different regularization techniques: the shrinkage estimator and the Choleski-based regularization method.
+$\hat{C} = (1-\lambda) \hat{\Sigma} + \lambda*\hat{D}$
+
+The usual empirical covariance matrix estimator used so far in the adaptive AM and AM2 algorithms is optimal in the classical setting with large samples and fixed low dimensions. This estimator performs poorly in the high dimensional setting and in particular when the dimension of the parameter space is larger than the number of observations. In the recent literature, several alternative covariance matrix estimation techniques have been proposed. In this paper we will focus on two different regularization techniques: the shrinkage estimator and the Cholesky-based method.
 
 Define the empirical covariance matrix as:
 
-where
+%todo
 
-.
+where:
 
-Define a target identity matrix as $D=diag(d)$ where $d$ represents the dimension of the problem. The idea of shrinkage estimation of the covariance matrix is to take a weighhted avearge of the empirical covariance matrix and the target matrix. Thus, given a parameter $\lambda$ representing the shrinkage intensity, (for its computation see Sch\"afer and Strimmer (2005) )the covariance matrix used in the algorithm can be defined as:
+%todo
+
+Define a target identity matrix as $D=\text{diag}(d)$ where $d$ represents the dimension of the problem. The idea of shrinkage estimation of the covariance matrix is to take a weighted average of the empirical covariance matrix and the target matrix given a parameter $\lambda$ representing the shrinkage intensity, (see Sch\aferand Strimmer (2005) for its computation ).The covariance matrix used in the algorithm can be defined as:
+
 
 $\hat{C} = (1-\lambda) \hat{\Sigma} + \lambda*\hat{D}$
 
-Notice that $0 < \lambda< 1$. When  $\lambda=0$, no shrinkage is applied to the  sample covariance matrix and the sample covariance matrix estimatorm is then used. In constrast, the case of $\lambda=1$ indicates a complete shrinkage of all pairwise covariances. In this case we are ignoring the existence of any covariances among the random variables considered. It is possible to show that, under general conditions, there exists a shrinkage intensity for which the resulting shrinkage estimator contains less estimation error than the original sample estimator; see James and Stein (1961).
-
-Shrinkage estimators shrink the overdispersed sample covariance
-eigenvalues
-
-As an alternative to both the empirical and the shrinkage estimator we have analyzed a regularization method based on the Cholesky decomposition of the covariance matrixz
-
-Following these two adaptive MH implementations, we are now looking to use something that is less naive than the vanilla estimator for the covariance matrix. In particular we have began testing the shrinkage and thresholding estimators as modifications to AM2. We will now test whether these estimators translate into better convergence by looking at their trajectories. We then plan to include burn in, and compare all algorithms in terms of the suboptimality factor following Roberts and Rosenthal (2009).
+Notice that $0 < \lambda< 1$. When $\lambda=0$, no shrinkage is applied to the sample covariance matrix and the empirical covariance matrix is used. In contrast, $\lambda=1$ is associated to a complete shrinkage of all pairwise covariances. In this case, we are thus ignoring the existence of any covariances among the random variables considered.
+It is possible to show that, under general conditions, there exists a shrinkage intensity for which the resulting shrinkage estimator contains less estimation error than the original empirical estimator; see James and Stein (1961). As an alternative to both the empirical and the shrinkage estimator of the covariance matrix, we have used a regularization techniques based on the Cholesky decomposition of the covariance matrix (ref). Consider a random vector X=() with covariance matrix given by $Sigma$.
+Define sigma=formula to be the modified Cholesky decomposition of the covariance matrix where $D$ is diagonal and $L$ is lower triangular with one on the diagonal. The Cholesky-based method is based on the idea of bounding the Cholesky factor L that is introducing sparsity in the Cholesky factor L estimating only the first k sub diagonal and setting the rest to zero.
+The bounding parameter k must be less than min(n-1,p). Notice that a similar approach for bounding the inverse of the covariance matrix has been proposed by (). However, (Authors ) have shown that the Cholesky based regularization method can be applied directly to the covariance matrix itself to obtain a sparse estimator with guaranteed positive definiteness.
+In order to reduce the computational cost of the algorithm, the shrinkage estimator of the covariance structure has been computed using a recursion formula similar to (x). On the contrary, the Cholesky-based covariance estimator has been evaluated at each step. Whilst this negatively impact on the running-time of the algorithm, it doesn’t affect its performance in terms of convergence rate $\alpha$.
 
 \section{\LaTeX}
 
