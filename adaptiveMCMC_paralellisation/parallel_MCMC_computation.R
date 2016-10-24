@@ -362,44 +362,193 @@ library(parallel)
 start = Sys.time()
 
 d = 8
-n_iter = 20000     #  Total number of iterations
+n_iter = 100000     #  Total number of iterations
 x_1 = rep(5,d)      #  Vector of inital values
-t_adapt = 2000      #  When to start adapting
+t_adapt = 10000      #  When to start adapting
 
-times = 2
+times = 14
 
 mclapply(1:times,function(t){
 
   if (t==1) {
-    adapt = 'AM'
-    cov_estimator = 'Shrinkage estimator'
-    X_AM_sh = mcmc(target = pi_norm_corr,
+    adapt = 'None'
+    X_AM_none = mcmc(target = pi_norm_corr,
                    n_iter = n_iter,
                    x_1 = x_1,
                    adapt=adapt,
                    t_adapt = t_adapt,
                    cov_estimator=cov_estimator
     )
-    save(X_AM_sh,file='data/X_AM_sh_new.rda')
+    save(X_AM_sh,file='data_24_10/X_AM_none.rda')
+  }
+  
+  if (t==2) {
+    adapt = 'AM'
+    cov_estimator = 'Sample covariance'
+    X_AM_sample = mcmc(target = pi_norm_corr,
+                   n_iter = n_iter,
+                   x_1 = x_1,
+                   adapt=adapt,
+                   t_adapt = t_adapt,
+                   cov_estimator=cov_estimator
+    )
+    save(X_AM_sample,file='data_24_10/X_AM_sample.rda')
   }
 
-
-
-  if (t==2) {
+  if (t==3) {
+    adapt = 'AM'
+    cov_estimator = 'Shrinkage estimator'
+    X_AM_sh1410 = mcmc(target = pi_norm_corr,
+                   n_iter = n_iter,
+                   x_1 = x_1,
+                   adapt=adapt,
+                   t_adapt = t_adapt,
+                   cov_estimator=cov_estimator
+    )
+    save(X_AM_sh1410,file='data_24_10/X_AM_sh1410.rda')
+  }
+  
+  if (t==4) {
+    adapt = 'AM'
+    cov_estimator = 'Thresholding estimator'
+    X_AM_TH = mcmc(target = pi_norm_corr,
+                   n_iter = n_iter,
+                   x_1 = x_1,
+                   adapt=adapt,
+                   t_adapt = t_adapt,
+                   cov_estimator=cov_estimator
+    )
+    save(X_AM_TH,file='data_24_10/X_AM_TH.rda')
+  }
+  
+  if (t==5) {
+    adapt = 'AM2'
+    cov_estimator = 'Sample covariance'
+    X_AM2_sample = mcmc(target = pi_norm_corr,
+                   n_iter = n_iter,
+                   x_1 = x_1,
+                   adapt=adapt,
+                   t_adapt = t_adapt,
+                   cov_estimator=cov_estimator
+    )
+    save(X_AM2_sample,file='data_24_10/X_AM2_sample.rda')
+  }
+  if (t==6) {
     adapt = 'AM2'
     cov_estimator = 'Shrinkage estimator'
-    X_AM2_sh = mcmc(target = pi_norm_corr,
+    X_AM2_SH = mcmc(target = pi_norm_corr,
+                   n_iter = n_iter,
+                   x_1 = x_1,
+                   adapt=adapt,
+                   t_adapt = t_adapt,
+                   cov_estimator=cov_estimator
+    )
+    save(X_AM2_SH,file='data_24_10/X_AM2_SH.rda')
+  }
+
+  if (t==7) {
+    adapt = 'AM2'
+    cov_estimator = 'Thresholding estimator'
+    X_AM2_TH_pi_banana8 = mcmc(target = pi_norm_corr,
+                   n_iter = n_iter,
+                   x_1 = x_1,
+                   adapt=adapt,
+                   t_adapt = t_adapt,
+                   cov_estimator=cov_estimator
+    )
+    save(X_AM2_TH_pi_banana8,file='data_24_10/X_AM2_TH_pi_banana8.rda')
+  }
+  
+  if (t==8) {
+    adapt = 'None'
+    X_AM_none_pi_banana8 = mcmc(target = pi_banana8,
+                     n_iter = n_iter,
+                     x_1 = x_1,
+                     adapt=adapt,
+                     t_adapt = t_adapt,
+                     cov_estimator=cov_estimator
+    )
+    save(X_AM_sh_pi_banana8,file='data_24_10/X_AM_none_pi_banana8.rda')
+  }
+  
+  if (t==9) {
+    adapt = 'AM'
+    cov_estimator = 'Sample covariance'
+    X_AM_sample_pi_banana8 = mcmc(target = pi_banana8,
+                       n_iter = n_iter,
+                       x_1 = x_1,
+                       adapt=adapt,
+                       t_adapt = t_adapt,
+                       cov_estimator=cov_estimator
+    )
+    save(X_AM_sample_pi_banana8,file='data_24_10/X_AM_sample_pi_banana8.rda')
+  }
+  
+  if (t==10) {
+    adapt = 'AM'
+    cov_estimator = 'Shrinkage estimator'
+    X_AM_sh1410_pi_banana8 = mcmc(target = pi_banana8,
+                       n_iter = n_iter,
+                       x_1 = x_1,
+                       adapt=adapt,
+                       t_adapt = t_adapt,
+                       cov_estimator=cov_estimator
+    )
+    save(X_AM_sh1410_pi_banana8,file='data_24_10/X_AM_sh1410_pi_banana8.rda')
+  }
+  
+  if (t==11) {
+    adapt = 'AM'
+    cov_estimator = 'Thresholding estimator'
+    X_AM_TH_pi_banana8 = mcmc(target = pi_banana8,
+                   n_iter = n_iter,
+                   x_1 = x_1,
+                   adapt=adapt,
+                   t_adapt = t_adapt,
+                   cov_estimator=cov_estimator
+    )
+    save(X_AM_TH_pi_banana8,file='data_24_10/X_AM_TH_pi_banana8.rda')
+  }
+  
+  if (t==12) {
+    adapt = 'AM2'
+    cov_estimator = 'Sample covariance'
+    X_AM2_sample_pi_banana8 = mcmc(target = pi_banana8,
+                        n_iter = n_iter,
+                        x_1 = x_1,
+                        adapt=adapt,
+                        t_adapt = t_adapt,
+                        cov_estimator=cov_estimator
+    )
+    save(X_AM2_sample_pi_banana8,file='data_24_10/X_AM2_sample_pi_banana8.rda')
+  }
+  if (t==13) {
+    adapt = 'AM2'
+    cov_estimator = 'Shrinkage estimator'
+    X_AM2_SH_pi_banana8 = mcmc(target = pi_banana8,
                     n_iter = n_iter,
                     x_1 = x_1,
                     adapt=adapt,
                     t_adapt = t_adapt,
                     cov_estimator=cov_estimator
     )
-    save(X_AM2_sh,file='data/X_AM2_sh_new.rda')
+    save(X_AM2_SH_pi_banana8,file='data_24_10/X_AM2_SHv.rda')
   }
-
+  
+  if (t==14) {
+    adapt = 'AM2'
+    cov_estimator = 'Thresholding estimator'
+    X_AM2_TH_pi_banana8 = mcmc(target = pi_banana8,
+                    n_iter = n_iter,
+                    x_1 = x_1,
+                    adapt=adapt,
+                    t_adapt = t_adapt,
+                    cov_estimator=cov_estimator
+    )
+    save(X_AM2_TH_pi_banana8,file='data_24_10/X_AM2_TH_pi_banana8.rda')
+  }
 }
-,mc.cores = 2)
+,mc.cores = 14)
 
 now = Sys.time()
 print(now - start)
