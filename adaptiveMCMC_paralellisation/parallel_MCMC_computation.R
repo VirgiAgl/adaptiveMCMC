@@ -362,9 +362,9 @@ library(parallel)
 start = Sys.time()
 
 d = 8
-n_iter = 100     #  Total number of iterations
+n_iter = 100000     #  Total number of iterations
 x_1 = rep(5,d)      #  Vector of inital values
-t_adapt = 10      #  When to start adapting
+t_adapt = 10000      #  When to start adapting
 
 times = 14
 
