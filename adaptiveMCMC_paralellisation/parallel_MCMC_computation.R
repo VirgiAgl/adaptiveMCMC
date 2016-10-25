@@ -362,9 +362,9 @@ library(parallel)
 start = Sys.time()
 
 d = 8
-n_iter = 100000     #  Total number of iterations
+n_iter = 100     #  Total number of iterations
 x_1 = rep(5,d)      #  Vector of inital values
-t_adapt = 10000      #  When to start adapting
+t_adapt = 10      #  When to start adapting
 
 times = 14
 
@@ -375,11 +375,9 @@ mclapply(1:times,function(t){
     X_AM_none = mcmc(target = pi_norm_corr,
                    n_iter = n_iter,
                    x_1 = x_1,
-                   adapt=adapt,
-                   t_adapt = t_adapt,
-                   cov_estimator=cov_estimator
+                   adapt=adapt
     )
-    save(X_AM_sh,file='data_24_10/X_AM_none.rda')
+    save(X_AM_none,file='data_24_10/X_AM_none.rda')
   }
   
   if (t==2) {
@@ -464,11 +462,9 @@ mclapply(1:times,function(t){
     X_AM_none_pi_banana8 = mcmc(target = pi_banana8,
                      n_iter = n_iter,
                      x_1 = x_1,
-                     adapt=adapt,
-                     t_adapt = t_adapt,
-                     cov_estimator=cov_estimator
-    )
-    save(X_AM_sh_pi_banana8,file='data_24_10/X_AM_none_pi_banana8.rda')
+                     adapt=adapt
+                     )
+    save(X_AM_none_pi_banana8,file='data_24_10/X_AM_none_pi_banana8.rda')
   }
   
   if (t==9) {
@@ -532,7 +528,7 @@ mclapply(1:times,function(t){
                     t_adapt = t_adapt,
                     cov_estimator=cov_estimator
     )
-    save(X_AM2_SH_pi_banana8,file='data_24_10/X_AM2_SHv.rda')
+    save(X_AM2_SH_pi_banana8,file='data_24_10/X_AM2_SH_pi_banana8.rda')
   }
   
   if (t==14) {
