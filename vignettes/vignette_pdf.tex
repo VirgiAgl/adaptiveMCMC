@@ -1,0 +1,118 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[round]{natbib}
+
+% The line below tells R to use knitr on this.
+%\VignetteEngine{knitr::knitr}
+
+\title{OxWaSP Module 1: Adaptive MCMC}
+\author{Virginia Aglietti \and Tamar Loach}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction to adaptive MCMC}
+
+MCMC algorithms allow sampling from complicated, high-dimensional distributions. Choice of the proposal distribution (from which samples are taken in an attempt to approximate sampling from the target distribution $\pi$) determines the ability of the algorithm to explore the parameter space fully and hence draw a good sample. Adaptive MCMC algorithms tackle this challenge by using samples already generated to learn about the target distribution; they push this knowledge back to the choice of proposal distribution iteratively.
+
+This project explores adaptive MCMC algorithms existing in the literature that use covariance estimators to improve convergence to a target distribution supported on a subset of $\mathbb{R}^d$. In this schema we learn about the target distribution $\pi$ through estimation of its correlation structure from the MCMC samples. We use this correlation structure to improve our estimate of the target. The performance of the algorithm depends heavily on the choice of the proposal distribution and its covariance structure. Different choices for the proposal covariance matrix may lead to different results. On the one hand, if the proposal covariance matrix is too narrow, the parameter space won't be properly explored. On the other hand, if the proposal covariance matrix is too wide, the rejection rate may be very high. In order to obtain a chain that adapts properly and settles down to rapid mixing, we need to select an optimal value for the covariance matrix.  Roberts \emph{et al.} (1997) have first shown that, under specific assumptions about the target distribution, the optimal value for the proposed covariance matrix is such that the acceptance rate of the algorithm is $0.234$, independently of the d-dimensional target distribution with \emph{iid} components. An optimal acceptance rate $\alpha^{*}=0.234$ will be used to compare the performance of the algorithms discussed in this report.
+
+\section{The AM algorithm}
+
+We first implement an adaptive MCMC algorithm which we will here call AM \citep{haario2001}. This is a modification of the random walk Metropolis-Hastings algorithm. In the AM algorithm the proposal distribution is updated at time $t$ to be a normal distribution centered on the current point $X_{t-1}$ with covariance $C_t(X_0, ..., X_{t-1})$ that depends on the the whole history of the chain. The use of historic states means the resulting chain is non-markovian, and reversibility conditions are not satisfied. Haario \emph{et al.} show that the right ergodic properties and correct simulation of the target distribution nonetheless remain. Provided we use a asymptotically symmetric proposal distribution the probability with which to accept candidate points in the chain is:
+
+
+\begin{align}
+\alpha(X_{t-1},Y) = \text{min}\left( 1,\frac{\pi(Y)}{\pi(X_{t-1})}\right).
+\end{align}
+
+With $C_t$ given by:
+
+\begin{align}
+C_t = s_d \text{cov}(X_0, ..., X_{t-1}) + s_d\epsilon I_d.
+\end{align}
+
+Here $\text{cov}()$ is the usual empirical covariance matrix:
+
+\begin{align}
+\text{cov}(x_0,...,x_k)=\frac{1}{k} \left( \Sigma_{i=0}^{k}x_ix_i^T-(k+1)\bar{x}_k\bar{x}_k^T \right),
+\end{align}
+
+and the parameter $s_d = \frac{2.4^2}{d}$ \citep{gelman1996}. $\epsilon$ is chosen to be very small compared to the subset of $\mathbb{R}^d$ upon which the target function is supported. The AM algorithm is computationally feasible due to recursive updating of the covariance matrix on acquisition of each new sample through the relation:
+
+\begin{align}
+C_{t+1} = \frac{t-1}{t} C_t + \frac{s_d}{t}(t \bar{X}_{t-1}\bar{X}^T_{t-1} - (t+1)\bar{X}_t \bar{X}^T_t + X_tX_t^T + \epsilon I_d).
+\end{align}
+
+The mean is in turns calculated recursively by:
+
+\begin{align}
+\bar{X}_{t+1} = \frac{t \bar{X}_{t}  + X_{t+1}}{t+1}.
+\end{align}
+
+Because of the instability of the covariance matrix, to implement the adaptivity we first run the algorithm with no change to the covariance of the proposal distribution. The adaptation starts at a user defined point in time, and until this time the covariance of the proposal is chosen to represent our best knowledge of the target distribution. We use a Gaussian distribution with no correlation structure thorughout this report.
+
+
+\section{An example - testing the AM algorithm}
+
+We now numerically test the AM algorithm. We have used two different target distributions: a correlated Gaussian distribution $N(0,\Sigma)$ and a banana-shaped distribution \citep{roberts2009} given by:
+
+\begin{align}
+f_B\left(x_1,...,x_d\right)\propto \exp \left[ -x_1^2/200 - \frac{1}{2} \left(x_2 + Bx_1^2-100B\right)^2 - \frac{1}{2} \left(x_3^2 + x_4^2 + ... + x_d^2\right) \right].
+\end{align}
+
+$B > 0$ is the so called bananicty constant (set to 0.1 throughout) and $d$ is the dimension. We have chosen the correlated Gaussian distribution as targeting this demonstrates how the use of empirical covariance improves convergence - we learn the target's covariance as we move through steps of the MCMC. The banana-shaped distribution is an additional example with an irregular shape. We use this to test the ability of the markov chain to fully explore the state space with and without adaption. We first run our implementation of the usual random-walk Metropolis-Hasting algorithm, and the AM adaptation modification of this, each time targetting $N(0,\Sigma)$. We have chosen $\Sigma$ to be generated from eigenvalues chosen unifromly at random on [1,10].
+
+The crucial function in the R package that we have created is called \texttt{mcmc()}. This function takes as arguments the following parameters:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{d} \hlkwb{=} \hlnum{8}                             \hlcom{#  Dimension of the parameter space}
+\hlstd{n_iter} \hlkwb{=} \hlnum{20000}                    \hlcom{#  Total number of iterations}
+\hlstd{x1} \hlkwb{=} \hlkwd{rep}\hlstd{(}\hlnum{5}\hlstd{,d)}                     \hlcom{#  Vector of inital values}
+\hlstd{t_adapt} \hlkwb{=} \hlnum{2000}                    \hlcom{#  When to start adapting}
+\hlstd{adapt} \hlkwb{=} \hlstr{"AM"}                      \hlcom{#  Algorithm to run.}
+\hlstd{target} \hlkwb{=} \hlstd{pi_norm_corr}             \hlcom{#  Target distribution function}
+\hlstd{cov_estimator}\hlkwb{=}\hlstr{"Sample covariance"} \hlcom{# Coviance matrix estimator}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+There are several target distribution functions built in to our package for testing the algorithm. Notice that \texttt{x1} represents the starting point of the chain and is user specified. We show here the call to the function \texttt{mcmc()} using as target distribution a correlated Gaussian distribution:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{X} \hlkwb{=} \hlkwd{mcmc}\hlstd{(}\hlkwc{target} \hlstd{= target,}
+         \hlkwc{n_iter} \hlstd{= n_iter,}
+         \hlkwc{x_1} \hlstd{= x1,}
+         \hlkwc{adapt}\hlstd{=adapt,}
+         \hlkwc{t_adapt} \hlstd{= t_adapt}
+         \hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+\section{Comparing AM and random-walk Metropolis-Hastings}
+
+Figure \ref{fig:mh_on_correlated_Gaussian_plots} shows the first component and the second component of the Markov chain at each iteration. The plot demostrates poor mixing of the MH algorithm when targeting a positively correlated multivariate Gaussian distribution (Figure \ref{fig:mh_on_correlated_Gaussian_plots2}). %positive or negative look at the second plot%.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
